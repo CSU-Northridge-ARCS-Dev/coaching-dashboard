@@ -1,9 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
+// import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Footer from "./Components/Footer";
 import "./style.css";
 
 const App = () => {
-  return <h1 className="tw-bg-green-300">Hello World</h1>;
+  return <Footer />;
 };
 
 ReactDOM.render(<App />, document.getElementById("root"));
