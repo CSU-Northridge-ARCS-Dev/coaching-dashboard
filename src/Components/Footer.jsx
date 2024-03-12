@@ -18,7 +18,7 @@ const Footer = () => {
         >
           <FontAwesomeIcon
             icon={faYoutube}
-            className="tw-text-blue-600 tw-mb-2 tw-mr-4 tw-w-12 tw-h-12 hover:tw-text-red-300 hover:tw-w-16 hover:tw-h-16 transition duration-300"
+            className="tw-text-white tw-mb-2 tw-mr-4 tw-w-12 tw-h-12 hover:tw-text-red-700"
           />
         </a>
         <a
@@ -28,7 +28,7 @@ const Footer = () => {
         >
           <FontAwesomeIcon
             icon={faInstagram}
-            className="tw-text-blue-600 tw-mb-2 tw-mr-4 tw-w-12 tw-h-12 hover:tw-text-red-300 hover:tw-w-16 hover:tw-h-16 transition duration-300"
+            className="tw-text-white tw-mb-2 tw-mr-4 tw-w-12 tw-h-12 hover:tw-text-red-700"
           />
         </a>
         <a
@@ -38,7 +38,7 @@ const Footer = () => {
         >
           <FontAwesomeIcon
             icon={faTwitter}
-            className="tw-text-blue-600 tw-mb-2 tw-mr-4 tw-w-12 tw-h-12 hover:tw-text-red-300 hover:tw-w-16 hover:tw-h-16 transition duration-300"
+            className="tw-text-white tw-mb-2 tw-mr-4 tw-w-12 tw-h-12 hover:tw-text-red-700"
           />
         </a>
         <a
@@ -48,7 +48,7 @@ const Footer = () => {
         >
           <FontAwesomeIcon
             icon={faFacebook}
-            className="tw-text-blue-600 tw-mb-2 tw-w-12 tw-h-12 hover:tw-text-red-300 hover:tw-w-16 hover:tw-h-16 transition duration-300"
+            className="tw-text-white tw-mb-2 tw-w-12 tw-h-12 hover:tw-text-red-700"
             target="_blank"
             rel="noopener noreferrer"
           />
