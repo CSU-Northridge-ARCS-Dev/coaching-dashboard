@@ -2,7 +2,7 @@ import React from "react";
 
 const Navbar = () => {
   return (
-    <div className="tw-bg-slate-400 tw-w-64 tw-flex tw-flex-col tw-items-center tw-py-4 tw-px-4">
+    <div className="tw-bg-red-900 tw-w-64 tw-flex tw-flex-col tw-items-center tw-py-4 tw-px-4">
       <div className="tw-flex tw-flex-row tw-items-center tw-w-full">
         <img
           src="/csun_logo.png"

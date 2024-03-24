@@ -8,9 +8,10 @@ const Home = () => {
   return (
     <div className="tw-grid tw-grid-rows-[1fr_auto] tw-grid-cols-[auto_1fr] tw-min-h-screen">
       <Navbar />
-      <div className="tw-col-span-1 tw-row-span-1 tw-bg-indigo-300">
+      <div className="tw-col-span-1 tw-row-span-1 tw-bg-red-900">
+        This is the background
         <div>
-          <div className="tw-bg-pink-300 tw-flex tw-justify-between tw-items-center tw-px-4 tw-py-2 tw-text-black">
+          <div className="tw-bg-red-900 tw-flex tw-justify-between tw-items-center tw-px-4 tw-py-2 tw-text-black">
             <div className="tw-text-xl">
               Hello John Doe, Welcome back to the
               <strong> Coaching Dashboard</strong>
