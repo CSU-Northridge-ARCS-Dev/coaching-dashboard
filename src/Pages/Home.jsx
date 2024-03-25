@@ -9,7 +9,7 @@ const Home = () => {
     <div className="tw-grid tw-grid-rows-[1fr_auto] tw-grid-cols-[auto_1fr] tw-min-h-screen">
       <Navbar />
       {/* use gradient component, then choice of colors  */}
-      <div className="tw-col-span-1 tw-row-span-1 tw-bg-gradient-to-r tw-from-gray-800 tw-to-red-800">
+      <div className="tw-col-span-1 tw-row-span-1 tw-bg-gradient-to-r tw-from-black tw-to-red-900">
         <div>
           <div className="tw-bg-pink-300 tw-flex tw-justify-between tw-items-center tw-px-4 tw-py-2 tw-text-black">
             <div className="tw-text-xl">

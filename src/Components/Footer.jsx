@@ -10,7 +10,15 @@ import {
 const Footer = () => {
   return (
     <footer className="tw-bg-black tw-py-10 tw-flex tw-flex-col tw-items-center">
-      <div className="tw-flex tw-justify-center">
+      <div className="tw-flex tw-justify-between tw-w-full tw-px-8 mb-4">
+        <p className="tw-text-white tw-text-2xl">
+          Once a Matador, Always a Matador
+        </p>
+        <p className="tw-text-xl tw-text-white">
+          Copyright &copy; California State University, Northridge
+        </p>
+      </div>
+      <div className="tw-flex tw-justify-end tw-w-full tw-pr-32">
         <a
           href="https://www.youtube.com/user/northridgeathletics"
           target="_blank"
@@ -54,9 +62,6 @@ const Footer = () => {
           />
         </a>
       </div>
-      <p className="tw-text-xl tw-text-white">
-        Copyright &copy; California State University, Northridge
-      </p>
     </footer>
   );
 };
