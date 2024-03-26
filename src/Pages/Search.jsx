@@ -4,7 +4,7 @@ import Footer from "../Components/Footer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faCog } from "@fortawesome/free-solid-svg-icons";
 
-const Home = () => {
+const Search = () => {
   return (
     <div className="tw-grid tw-grid-rows-[1fr_auto] tw-grid-cols-[auto_1fr] tw-min-h-screen">
       <Navbar />
@@ -32,14 +32,9 @@ const Home = () => {
           <div className="tw-h-1 tw-bg-black"></div>
 
           <section className="tw-flex ">
-            <div>
-              <img
-                src="/soccer_team.jpg"
-                alt="CSUN Soccer Team"
-                className="tw-mx-4 tw-my-4"
-              />
-            </div>
-            <div className="tw-bg-black"></div>
+            <p className="tw-text-white">
+              This is the beginning of the search page
+            </p>
           </section>
         </div>
       </div>
@@ -50,4 +45,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Search;
