@@ -35,9 +35,6 @@ const Home = () => {
                 alt="CSUN Soccer Team"
                 className="tw-mx-4 tw-my-4"
               />
-              <h2 className="tw-text-center">
-                Once a Matador, always a Matador!
-              </h2>
             </div>
             <div className="tw-bg-black"></div>
           </section>
