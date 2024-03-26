@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHome,
@@ -10,33 +10,43 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const Navbar = () => {
+  const location = useLocation();
+
   return (
     <div className="tw-bg-red-900 tw-w-64 tw-flex tw-flex-col tw-items-center tw-py-4 tw-px-4  tw-justify-center">
       <div className="tw-flex tw-flex-col tw-w-full tw-mt-4 tw-items-center">
         <Link
           to="/"
-          className="tw-py-2 tw-text-3xl tw-text-white tw-w-full hover:tw-text-black tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12"
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+            location.pathname === "/" ? "tw-text-black" : "tw-text-white"
+          }`}
         >
           <FontAwesomeIcon icon={faHome} className="tw-text-white tw-mr-6" />
           Home
         </Link>
         <Link
           to="/profile"
-          className="tw-py-2 tw-text-3xl tw-text-white tw-w-full hover:tw-text-black tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12"
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+            location.pathname === "/profile" ? "tw-text-black" : "tw-text-white"
+          }`}
         >
           <FontAwesomeIcon icon={faUser} className="tw-text-white tw-mr-6" />
           Profile
         </Link>
         <Link
           to="/search"
-          className="tw-py-2 tw-text-3xl tw-text-white hover:tw-text-black tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12"
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+            location.pathname === "/search" ? "tw-text-black" : "tw-text-white"
+          }`}
         >
           <FontAwesomeIcon icon={faSearch} className="tw-text-white tw-mr-6" />
           Search
         </Link>
         <Link
           to="/health"
-          className="tw-py-2 tw-text-3xl tw-text-white hover:tw-text-black tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12"
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+            location.pathname === "/health" ? "tw-text-black" : "tw-text-white"
+          }`}
         >
           <FontAwesomeIcon
             icon={faHeartbeat}
@@ -46,7 +56,9 @@ const Navbar = () => {
         </Link>
         <Link
           to="/logout"
-          className="tw-py-2 tw-text-3xl tw-text-white hover:tw-text-black tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12"
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+            location.pathname === "/logout" ? "tw-text-black" : "tw-text-white"
+          }`}
         >
           <FontAwesomeIcon
             icon={faSignOutAlt}
