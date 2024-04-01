@@ -3,7 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHome,
-  faUser,
+  faUser, 
+  faBars,
   faSearch,
   faHeartbeat,
   faSignOutAlt,
@@ -11,13 +12,20 @@ import {
 
 const Navbar = () => {
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="tw-bg-red-900 tw-w-64 tw-flex tw-flex-col tw-items-center tw-py-4 tw-px-4  tw-justify-center">
+    <div className="tw-bg-red-900 tw-flex tw-flex-wrap tw-items-center tw-py-4 tw-px-4  tw-justify-center">
       <div className="tw-flex tw-flex-col tw-w-full tw-mt-4 tw-items-center">
+      <button
+        className="tw-text-white tw-lg:hidden tw-p-2 tw-mr-2"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <FontAwesomeIcon icon={faBars} />
+      </button>
         <Link
           to="/"
-          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -26,7 +34,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/profile"
-          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/profile" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -35,7 +43,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/search"
-          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/search" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -44,7 +52,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/health"
-          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/health" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -56,7 +64,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/logout"
-          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-w-full tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/logout" ? "tw-text-black" : "tw-text-white"
           }`}
         >
