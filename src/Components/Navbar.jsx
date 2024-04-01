@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";  {/* import useState is neccessary */}
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -21,7 +21,7 @@ const Navbar = () => {
         className="tw-text-white tw-lg:hidden tw-p-2 tw-mr-2"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <FontAwesomeIcon icon={faBars} />
+      <FontAwesomeIcon icon={faBars} />
       </button>
         <Link
           to="/"

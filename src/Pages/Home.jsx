@@ -13,6 +13,7 @@ const Home = () => {
         <div>
           <div className="tw-bg-red-900 tw-flex tw-justify-between tw-items-center tw-px-4 tw-py-2 tw-text-white">
             <div className="tw-text-xl">
+              {/* use dynamic data here instead of John Doe */}
               Hello John Doe, Welcome back to the
               <strong> Coaching Dashboard</strong>
               👋
