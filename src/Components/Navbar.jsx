@@ -15,9 +15,9 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (  
-    <div className={`tw-bg-red-900 tw-flex tw-flex-wrap tw-items-center tw-p-4 tw-justify-center ${isOpen ? 'tw-w-16' : 'tw-w-full'} tw-relative`}>
+    <div className={`tw-bg-red-900 tw-flex tw-flex-wrap tw-items-center tw-p-4 tw-justify-center ${isOpen ? 'tw-w-16 tw-h-16' : 'tw-w-full tw-h-auto'} tw-relative`}>
       <button
-        className="tw-text-white tw-lg:hidden tw-p-2 tw-absolute tw-top-4"
+        className="tw-text-white tw-lg:hidden tw-p-8 tw-absolute tw-top"
         onClick={() => setIsOpen(!isOpen)}
       >
         <FontAwesomeIcon icon={faBars} size="2x"/>
