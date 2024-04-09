@@ -3,6 +3,7 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faCog } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   return (
@@ -19,14 +20,18 @@ const Home = () => {
               👋
             </div>
             <div>
-              <button className="tw-ml-12">
-                <FontAwesomeIcon icon={faBell} className="tw-text-4xl" />
-                <div>Alerts</div>
-              </button>
-              <button className="tw-ml-12">
-                <FontAwesomeIcon icon={faCog} className="tw-text-4xl" />
-                <div>Settings</div>
-              </button>
+              <Link to="/alerts">
+                <button className="tw-ml-12">
+                  <FontAwesomeIcon icon={faBell} className="tw-text-4xl" />
+                  <div>Alerts</div>
+                </button>
+              </Link>
+              <Link to="/Settings">
+                <button className="tw-ml-12">
+                  <FontAwesomeIcon icon={faCog} className="tw-text-4xl" />
+                  <div>Settings</div>
+                </button>
+              </Link>
             </div>
           </div>
 
