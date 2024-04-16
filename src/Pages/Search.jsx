@@ -11,7 +11,7 @@ import {
 
 const Search = () => {
   return (
-    <div className="tw-grid tw-grid-rows-[1fr_auto] tw-grid-cols-[auto_1fr] tw-min-h-screen">
+    <div className="tw-grid tw-grid-rows-[1fr_auto] tw-grid-cols-[auto_0.9fr] tw-min-h-screen">
       <Navbar />
       <div className="tw-col-span-1 tw-row-span-1 tw-bg-gradient-to-r tw-from-black tw-to-red-900 tw-border-l-4 tw-border-black">
         <div>
