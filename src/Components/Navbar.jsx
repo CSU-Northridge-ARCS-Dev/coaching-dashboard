@@ -25,7 +25,7 @@ const Navbar = () => {
       </button>
         <Link
           to="/"
-          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -34,7 +34,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/profile"
-          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/profile" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -43,7 +43,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/search"
-          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/search" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -52,7 +52,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/health"
-          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/health" ? "tw-text-black" : "tw-text-white"
           }`}
         >
@@ -64,7 +64,7 @@ const Navbar = () => {
         </Link>
         <Link
           to="/logout"
-          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
+          className={`tw-py-2 tw-text-3xl tw-flex-1 tw-items-center tw-rounded tw-mb-12 ${
             location.pathname === "/logout" ? "tw-text-black" : "tw-text-white"
           }`}
         >

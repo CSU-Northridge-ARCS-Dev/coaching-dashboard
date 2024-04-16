@@ -6,7 +6,7 @@ body {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template: repeat(8, minmax(0, 0.95fr)) / repeat(6, minmax(0, 0.9fr));
+    grid-template: repeat(12, minmax(0, 0.9fr)) / repeat(6, minmax(0, 0.9fr));
     padding: 20px;
     gap: 20px;
     box-sizing: border-box;
@@ -14,9 +14,9 @@ body {
 }
 
 .grid-item {
-    font-size: 200%;
-    text-align: center;
-    align-items: center;
+    overflow: hidden;
+    font-size: 100%;
+    padding-left: 20px;
     background-color: #CC5B5B;
 }
 
@@ -26,23 +26,52 @@ body {
 }
 
 #team-heart-insights {
+    display: flex;
+    flex-direction: column;
     grid-column: 1 / span 3;
-    grid-row: span 3;
+    grid-row: span 4;
 }
+
+#team-heart-insights>.tw-flex {
+    flex-wrap: wrap;
+    /* Allow flex items to wrap */
+}
+
+
 
 #team-sleep-insights {
     grid-column: 4 / span 4;
-    grid-row: span 3;
+    grid-row: span 4;
+}
+
+#team-sleep-insights > img {
+    width: 90%;
+    height: 70%;
+    object-fit: cover;
 }
 
 #individual-heart-insights {
+    display: flex;
+    flex-direction: column;
     grid-column: 1 / span 3;
-    grid-row: span 3;
+    grid-row: span 4;
 }
 
+#individual-heart-insights > *, #individual-sleep-insights > * {
+    flex-wrap: wrap;
+}
+
+#individual-heart-insights button, #individual-sleep-insights button {
+    height: 110px;
+    width: 110px;
+}
+
+
 #individual-sleep-insights {
+    display: flex;
+    flex-direction: column;
     grid-column: 4 / span 4;
-    grid-row: span 3;
+    grid-row: span 4;
 }
 
 #data-insights {
@@ -54,4 +83,26 @@ body {
 
 .tw-grid {
     min-height: 100vh;
+}
+
+.heart-icon {
+    color: #E84E85;
+}
+
+.icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+.number {
+    position: absolute;
+    justify-content: center;
+    font-weight: bold;
+    top: 47%;
+    left: 49%;
+    transform: translate(-50%, -50%);
+    font-size: 1rem;
+    /* Adjust the font size as needed */
+    color: white;
+    /* Adjust the color as needed */
 }

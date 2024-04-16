@@ -7,6 +7,9 @@ import {
   faCog,
   faSearch,
   faUser,
+  faHeart,
+  faCouch,
+  faHeartPulse,
 } from "@fortawesome/free-solid-svg-icons";
 
 import "./styling/health.css";
@@ -38,12 +41,141 @@ const HealthInsights = () => {
           <div className="tw-h-1 tw-bg-black"></div>
 
             <div className="insights">
-                <div class="grid-item" id="filters">Filters</div>
-                <div class="grid-item" id="team-heart-insights">Team Heart Insights</div>
-                <div class="grid-item" id="team-sleep-insights">Team Sleep insights</div>
-                <div class="grid-item" id="individual-heart-insights">Individual Heart Insights</div>
-                <div class="grid-item" id="individual-sleep-insights">Individual Sleep Insights</div>
-                <div class="grid-item" id="data-insights">Data Insights</div>
+                <div className="grid-item" id="filters">Filters</div>
+                <div className="grid-item" id="team-heart-insights">
+                    <div className="tw-flex tw-font-bold tw-justify-between tw-items-center">
+                        <span>Team Heart Insights</span>
+                        <span className="tw-mr-4">see all</span>
+                    </div>
+                    <div className="tw-flex tw-gap-4 tw-py-2" >
+                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            <FontAwesomeIcon icon={faHeart} size="4x" />
+                            Heart Rate
+                        </button >
+                        <button  className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            <FontAwesomeIcon icon={faCouch} size="4x" />
+                            Resting Rate
+                        </button>
+                        <button  className="tw-flex tw-bg-yellow-900  tw-flex-col tw-p-3 tw-items-center">
+                            <FontAwesomeIcon icon={faHeartPulse} size="4x" />
+                            Variability
+                        </button>
+                        <button  className="tw-flex tw-bg-yellow-900  tw-flex-col tw-p-3 tw-items-center">
+                            Avg. Heart Rate
+                        </button>
+                    </div>
+                </div>
+                <div className="grid-item" id="team-sleep-insights">
+                    <div className="tw-flex tw-font-bold tw-justify-between tw-items-center">
+                        <span>Team Sleep Insights</span>
+                        <span className="tw-mr-4">see all</span>
+                    </div>
+                    <img
+                        src="./Public/image 8.svg"
+                        alt="Sleep Insights"
+                    />
+                </div>
+                <div className="grid-item" id="individual-heart-insights">
+                     <div className="tw-flex tw-font-bold tw-justify-between tw-items-center">
+                        <span>Individual Heart Insights</span>
+                        <span className="tw-mr-4">see all</span>
+                    </div>
+                    <div className="tw-flex tw-gap-4 tw-py-2" >
+                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            Bob B. 
+                           <span className="icon-container">
+                                <span className="number">100</span>
+                                <FontAwesomeIcon icon={faHeart} size="4x" className="heart-icon" />
+                            </span>
+                        </button > 
+                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            Favour G.
+                            <span className="icon-container">
+                                <span className="number">100</span>
+                                <FontAwesomeIcon icon={faHeart} size="4x" className="heart-icon" />
+                            </span>
+                        </button >
+                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            Sugoma B.
+                            <span className="icon-container">
+                                <span className="number">100</span>
+                                <FontAwesomeIcon icon={faHeart} size="4x" className="heart-icon" />
+                            </span>
+                        </button >
+                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            Matthew G.
+                            <span className="icon-container">
+                                <span className="number">100</span>
+                                <FontAwesomeIcon icon={faHeart} size="4x" className="heart-icon" />
+                            </span>
+                        </button >
+                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            Gerard G.
+                            <span className="icon-container">
+                                <span className="number">100</span>
+                                <FontAwesomeIcon icon={faHeart} size="4x" className="heart-icon" />
+                            </span>
+                        </button >
+                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                            Husnain M.
+                            <span className="icon-container">
+                                <span className="number">100</span>
+                                <FontAwesomeIcon icon={faHeart} size="4x" className="heart-icon" />
+                            </span>
+                        </button >
+                    </div>
+                </div>
+                <div className="grid-item" id="individual-sleep-insights">
+                    <div className="tw-flex tw-font-bold tw-justify-between tw-items-center">
+                        <span>Individual Sleep Insights</span>
+                        <span className="tw-mr-4">see all</span>
+                    </div>
+                <div className="tw-flex tw-gap-4 tw-py-2" >
+                    <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                         Steve G.
+                        <img
+                            src="./Public/icons8-sleep-64 1.svg"
+                            alt="Sleep Icon"
+                        />
+                    </button >
+                                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                         Steve G.
+                        <img
+                            src="./Public/icons8-sleep-64 1.svg"
+                            alt="Sleep Icon"
+                        />
+                    </button >
+                                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                         Steve G.
+                        <img
+                            src="./Public/icons8-sleep-64 1.svg"
+                            alt="Sleep Icon"
+                        />
+                    </button >
+                                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                         Steve G.
+                        <img
+                            src="./Public/icons8-sleep-64 1.svg"
+                            alt="Sleep Icon"
+                        />
+                    </button >
+                                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                         Steve G.
+                        <img
+                            src="./Public/icons8-sleep-64 1.svg"
+                            alt="Sleep Icon"
+                        />
+                    </button >
+                                        <button className="tw-flex tw-bg-yellow-900 tw-flex-col tw-p-3 tw-items-center">
+                         Steve G.
+                        <img
+                            src="./Public/icons8-sleep-64 1.svg"
+                            alt="Sleep Icon"
+                        />
+                    </button >
+                </div>
+                </div>
+                <div className="grid-item" id="data-insights">Data Insights</div>
             </div>
         </div>
         </div>
