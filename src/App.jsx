@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home";
 import Search from "./Pages/Search";
 import HealthInsights from "./Pages/HealthInsights";
+import Profile from "./Pages/Profile";
 import "./style.css";
 
 const App = () => {
@@ -12,6 +13,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/health" element={<HealthInsights />} />
       </Routes>
     </BrowserRouter>
