@@ -17,12 +17,12 @@ const Navbar = () => {
   return (  
     <div className={`tw-bg-red-900 tw-flex tw-flex-wrap tw-items-center tw-p-4 tw-justify-center ${isOpen ? 'tw-w-16 tw-h-16' : 'tw-w-full tw-h-auto'} tw-relative`}>
       <button
-        className="tw-text-white tw-lg:hidden tw-p-8 tw-absolute tw-top"
+        className="tw-text-white tw-lg:hidden tw-p-8 tw-absolute tw-top-0 tw-right-0 tw-transition tw-duration-500 tw-ease-in-out tw-transform tw-translate-x-full tw-translate-y-full tw-rotate-180 tw-rotate-0 tw-text-3xl tw-bg-red-900 tw-border-none tw-outline-none tw-cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
         <FontAwesomeIcon icon={faBars} size="2x"/>
       </button>
-      <div className={`tw-flex tw-flex-col tw-w-full tw-mt-4 tw-items-center ${isOpen ? 'tw-hidden' : 'tw-block'}`}>
+      <div className={`tw-flex tw-flex-col tw-w-full tw-mt-4 tw-items-center tw-transition tw-duration-500 tw-ease-in-out ${isOpen ? 'tw-opacity-0' : 'tw-opacity-100'}`}>
         <Link
           to="/"
           className={`tw-py-2 tw-text-3xl tw-w-full tw-flex-1 tw-justify-center tw-items-center tw-rounded tw-mb-12 ${
