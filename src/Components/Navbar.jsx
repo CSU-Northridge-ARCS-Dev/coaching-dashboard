@@ -15,7 +15,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (  
-    <div className={`tw-bg-red-900 tw-flex tw-flex-wrap tw-items-center tw-p-4 tw-justify-center ${isOpen ? 'tw-w-16 tw-h-16' : 'tw-w-full tw-h-auto'} tw-relative`}>
+    <div className={`tw-bg-red-900 tw-flex tw-flex-wrap tw-items-center tw-p-4 tw-justify-center ${isOpen ? 'tw-w-16 tw-h-16' : 'tw-w-full tw-h-auto'} tw-relative tw-border-1-4 tw-border-black`}>
       <button
         className="tw-text-white tw-lg:hidden tw-p-8 tw-absolute tw-top-0 tw-right-0 tw-transition tw-duration-500 tw-ease-in-out tw-transform tw-translate-x-full tw-translate-y-full tw-rotate-180 tw-rotate-0 tw-text-3xl tw-bg-red-900 tw-border-none tw-outline-none tw-cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
