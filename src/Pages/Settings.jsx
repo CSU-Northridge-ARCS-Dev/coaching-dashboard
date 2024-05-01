@@ -3,7 +3,7 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import TopBar from '../Components/TopBar';
 import { getAuth, fetchSignInMethodsForEmail } from "firebase/auth";
-export const ThemeContext = createContext();
+//export const ThemeContext = createContext();
 
 const Settings = () => {
     const [email, setEmail] = useState("");
@@ -70,4 +70,4 @@ const Settings = () => {
     );
 };
 
-export default Settings;import React, { useState } from "react";
+export default Settings;
