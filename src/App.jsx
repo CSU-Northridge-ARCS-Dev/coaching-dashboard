@@ -5,6 +5,7 @@ import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import Search from "./Pages/Search";
 import Settings from "./Pages/Settings";
+import Alerts from "./Pages/Alerts";
 import "./style.css";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
@@ -33,6 +34,8 @@ const App = () => {
         <Route path="/home" element={<Home />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/alerts" element={<Alerts />} />
       </Routes>
     </BrowserRouter>
   );
