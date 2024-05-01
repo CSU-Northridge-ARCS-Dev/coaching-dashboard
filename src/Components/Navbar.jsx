@@ -40,7 +40,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="tw-bg-red-900 tw-flex tw-flex-wrap tw-items-center tw-py-4 tw-px-4 tw-justify-center">
+    <div className="tw-bg-appTheme tw-flex tw-flex-wrap tw-items-center tw-py-4 tw-px-4 tw-justify-center">
       {isMobile ? (
         <div className="tw-flex tw-justify-start tw-w-full">
           <FontAwesomeIcon

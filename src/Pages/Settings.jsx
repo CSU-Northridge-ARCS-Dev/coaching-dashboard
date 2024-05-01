@@ -52,58 +52,61 @@ const Settings = () => {
 
     return (
         <div className="settings-topbar tw-grid tw-grid-rows-[1fr_auto] tw-grid-cols-[auto_1fr] tw-min-h-screen">
-            {isMobile && <Navbar />}
-            {user && !isMobile && (
-            <div className="tw-bg-red-900 tw-flex tw-justify-between tw-items-center tw-px-4 tw-py-2 tw-text-white">
-                <div className="tw-text-xl">
-                Hello {firstName} {lastName}, Welcome back to the
-                <strong> Coaching Dashboard</strong> 👋
-                </div>
-                <div className="tw-flex tw-items-center">
-                <button className="tw-ml-12">
-                    <FontAwesomeIcon icon={faBell} className="tw-text-4xl" />
-                    <div>Alerts</div>
-                </button>
-                <div className="tw-ml-12 tw-flex tw-flex-col tw-items-center">
-                    <Link to="/settings">
-                    <FontAwesomeIcon icon={faCog} className="tw-text-4xl" />
-                    </Link>
-                    <div>Settings</div>
-                </div>
-                </div>
-            </div>
-            )}
-            {/* Content for general, appearance, notifications, and data settings */}
+            {!isMobile && <Navbar />}
             <div className="tw-col-span-1 tw-row-span-1 tw-bg-[gradient-radial-1] tw-bg-[gradient-radial-2] tw-border-l-4 tw-border-black">
-                {/* Content for dark mode, notification settings, and health data delete */}
-                <div className='settings-container tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4'>
-                    <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
-                        <h2 className='tw-col-span-2 tw-text-center'>General</h2>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Setting 1</button>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Setting 2</button>
-                        <input className='settings-button tw-bg-red-900 tw-text-white'
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter email to check"
-                        />
-                        <button className="settings-button tw-bg-red-900 tw-text-white" onClick={handleCheckEmail}>Check Email</button>
-                        <p className='settings-button tw-bg-red-900 tw-text-white'>{message}</p>
+                {isMobile && <Navbar />}
+                {user && !isMobile && (
+                <div className="tw-bg-appTheme tw-flex tw-justify-between tw-items-center tw-px-4 tw-py-2 tw-text-white">
+                    <div className="tw-text-xl">
+                        Hello {firstName} {lastName}, Welcome back to the
+                        <strong> Coaching Dashboard</strong> 👋
+                        </div>
+                        <div className="tw-flex tw-items-center">
+                        <button className="tw-ml-12">
+                            <FontAwesomeIcon icon={faBell} className="tw-text-4xl" />
+                            <div>Alerts</div>
+                        </button>
+                        <div className="tw-ml-12 tw-flex tw-flex-col tw-items-center">
+                            <Link to="/settings">
+                            <FontAwesomeIcon icon={faCog} className="tw-text-4xl" />
+                            </Link>
+                            <div>Settings</div>
+                        </div>
                     </div>
-                    <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
-                    <h2 className='tw-col-span-2 tw-text-center'>Appearance</h2>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Dark Mode</button>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Setting 2</button>
-                    </div>
-                    <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
-                        <h2 className='tw-col-span-2 tw-text-center'>Notifications</h2>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Setting 1</button>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Setting 2</button>
-                    </div>
-                    <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
-                        <h2 className='tw-col-span-2 tw-text-center'>Data Settings</h2>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Setting 1</button>
-                        <button className='settings-button tw-bg-red-900 tw-text-white' id='dark-mode-button'>Setting 2</button>
+                </div>
+                )}
+                {/* Content for general, appearance, notifications, and data settings */}
+                <div className="tw-col-span-1 tw-row-span-1 tw-bg-[gradient-radial-1] tw-bg-[gradient-radial-2] tw-border-l-4 tw-border-black">
+                    {/* Content for dark mode, notification settings, and health data delete */}
+                    <div className='settings-container tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4'>
+                        <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
+                            <h2 className='tw-col-span-2 tw-text-center'>General</h2>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Setting 1</button>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Setting 2</button>
+                            <input className='settings-button tw-bg-appTheme tw-text-white'
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter email to check"
+                            />
+                            <button className="settings-button tw-bg-appTheme tw-text-white" onClick={handleCheckEmail}>Check Email</button>
+                            <p className='settings-button tw-bg-appTheme tw-text-white'>{message}</p>
+                        </div>
+                        <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
+                        <h2 className='tw-col-span-2 tw-text-center'>Appearance</h2>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Dark Mode</button>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Setting 2</button>
+                        </div>
+                        <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
+                            <h2 className='tw-col-span-2 tw-text-center'>Notifications</h2>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Setting 1</button>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Setting 2</button>
+                        </div>
+                        <div className='settings-item tw-grid tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-gray-300'>
+                            <h2 className='tw-col-span-2 tw-text-center'>Data Settings</h2>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Setting 1</button>
+                            <button className='settings-button tw-bg-appTheme tw-text-white' id='dark-mode-button'>Setting 2</button>
+                        </div>
                     </div>
                 </div>
             </div>

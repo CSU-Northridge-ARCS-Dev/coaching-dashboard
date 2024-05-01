@@ -10,6 +10,9 @@ module.exports = {
           "radial-gradient(circle at 90% 80%, black 0%, red 100%)",
       }),
     },
+    colors: {
+      appTheme: "rgb(17, 96, 164)",
+    },
   },
   plugins: [require("daisyui")],
   prefix: "tw-",
