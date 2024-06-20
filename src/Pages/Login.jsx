@@ -3,15 +3,38 @@ import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { usePermission } from "react-permission-role";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  Box,
+  InputAdornment,
+  IconButton,
+  Alert,
+} from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import ARCSImage from "../Public/ARCS.jpg"; 
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
   const navigate = useNavigate();
   const { setUser } = usePermission();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setEmailError(false);
+    setPasswordError(false);
 
     try {
       const auth = getAuth();
@@ -55,49 +78,129 @@ const Login = () => {
         navigate("/home");
       }
     } catch (error) {
+      // Handle specific errors and set appropriate error messages and states
+      if (error.code === 'auth/user-not-found') {
+        setError("Email is incorrect");
+        setEmailError(true);
+      } else if (error.code === 'auth/wrong-password') {
+        setError("Password is incorrect");
+        setPasswordError(true);
+      } else {
+        setError("An unexpected error occurred");
+      }
       console.error("Error signing in:", error.message);
     }
   };
 
+  const handleClickShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   return (
-    <div className="tw-text-white tw-h-[100vh] tw-flex tw-items-center tw-justify-center tw-bg-cover tw-bg-blue-900">
-      <div className="tw-bg-slate-800 border tw-border-slate-600 tw-rounded-md tw-p-8 tw-shadow-lg tw-backdrop-filler tw-backdrop-blur-lg tw-relative">
-        <h1 className="tw-text-4xl tw-font-bold tw-text-center tw-mb-6">
-          Login
-        </h1>
-        <form onSubmit={handleSubmit}>
-          <div className="tw-relative tw-my-4">
-            <input
-              type="email"
-              className="tw-block tw-w-72 tw-py-2.5 tw-px-0 tw-text-sm tw-text-white tw-bg-transparent tw-border-0 tw-border-b-2 tw-border-gray-300 tw-appearance-none tw-dark:focus:border-blue-500 tw-focus:outline-none tw-focus:ring-0 tw-focus:text-white tw-focus:border-blue-600 tw-peer"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="tw-relative tw-my-4">
-            <input
-              type="password"
-              id="password"
-              className="tw-block tw-w-72 tw-py-2.5 tw-px-0 tw-text-sm tw-text-white tw-bg-transparent tw-border-0 tw-border-b-2 tw-border-gray-300 tw-appearance-none tw-dark:focus:border-blue-500 tw-focus:outline-none tw-focus:ring-0 tw-focus:text-white tw-focus:border-blue-600 tw-peer"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="tw-w-full tw-mt-6 tw-mb-4 tw-text-[18px] tw-rounded tw-bg-blue-500 tw-transitions-colors tw-duration-300"
-          >
-            Login
-          </button>
-        </form>
-      </div>
-    </div>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "black",
+        position: "relative",
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.3,
+        }}
+      />
+      <Container
+        component="main"
+        maxWidth="xs"
+        sx={{ position: "relative", zIndex: 1, mt: 8 }}
+      >
+        <Card sx={{ padding: 4, borderRadius: 2, boxShadow: 3 }}>
+          <CardContent>
+            <Typography component="h1" variant="h5" align="center">
+              Login
+            </Typography>
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{ mt: 2 }}
+            >
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={emailError}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                id="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={passwordError}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleClickShowPassword} edge="end">
+                        <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <CardActions sx={{ mt: 2 }}>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                >
+                  Login
+                </Button>
+              </CardActions>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+      <Box
+        component="img"
+        src={ARCSImage}
+        alt="ARCS"
+        sx={{
+          width: "100%",
+          maxHeight: "270px",
+          objectFit: "cover",
+        }}
+      />
+    </Box>
   );
 };
 
