@@ -1,13 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import Search from "./Pages/Search";
 import Settings from "./Pages/Settings";
-import "./style.css";
-import { initializeApp } from "firebase/app";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { PermissionProvider } from "react-permission-role";
 import { getFirestore } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import "./style.css";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -23,18 +25,22 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
 const App = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/search" element={<Search />} />
-      </Routes>
+      <PermissionProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/search" element={<Search />} />
+        </Routes>
+      </PermissionProvider>
     </BrowserRouter>
   );
 };
+
 ReactDOM.render(<App />, document.getElementById("root"));
