@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
+import Insights from "./Pages/Insights";
 import Settings from "./Pages/Settings";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PermissionProvider } from "react-permission-role";
@@ -35,6 +36,7 @@ const App = () => {
           <Route path="/" element={<Login />} />
           <Route path="/home" element={<Home />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/insights" element={<Insights />} />
         </Routes>
       </PermissionProvider>
     </BrowserRouter>

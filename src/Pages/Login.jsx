@@ -18,7 +18,8 @@ import {
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import ARCSImage from "../Public/ARCS.jpg"; 
+import ARCSImage from "../Public/ARCS.jpg";
+import Footer from "../Components/Footer";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -61,7 +62,7 @@ const Login = () => {
             permissions: [],
           });
 
-          // Navigate with state including user details and role
+          // Navigate with user details and role
           navigate("/home", {
             state: {
               firstName: userData.firstName,
@@ -79,10 +80,10 @@ const Login = () => {
       }
     } catch (error) {
       // Handle specific errors and set appropriate error messages and states
-      if (error.code === 'auth/user-not-found') {
+      if (error.code === "auth/user-not-found") {
         setError("Email is incorrect");
         setEmailError(true);
-      } else if (error.code === 'auth/wrong-password') {
+      } else if (error.code === "auth/wrong-password") {
         setError("Password is incorrect");
         setPasswordError(true);
       } else {
@@ -102,29 +103,22 @@ const Login = () => {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "space-between",
         backgroundColor: "black",
-        position: "relative",
+        alignItems: "center",
       }}
     >
       <Box
+        component="img"
+        src={ARCSImage}
+        alt="ARCS"
         sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
           width: "100%",
-          height: "100%",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.3,
+          maxHeight: "280px",
+          objectFit: "cover",
         }}
       />
-      <Container
-        component="main"
-        maxWidth="xs"
-        sx={{ position: "relative", zIndex: 1, mt: 8 }}
-      >
+      <Container component="main" maxWidth="xs" sx={{ mt: 4 }}>
         <Card sx={{ padding: 4, borderRadius: 2, boxShadow: 3 }}>
           <CardContent>
             <Typography component="h1" variant="h5" align="center">
@@ -170,7 +164,9 @@ const Login = () => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={handleClickShowPassword} edge="end">
-                        <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
+                        <FontAwesomeIcon
+                          icon={showPassword ? faEye : faEyeSlash}
+                        />
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -181,7 +177,14 @@ const Login = () => {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  color="primary"
+                  sx={{
+                    backgroundColor: "black",
+                    color: "white",
+                    borderRadius: "20px",
+                    "&:hover": {
+                      backgroundColor: "gray",
+                    },
+                  }}
                 >
                   Login
                 </Button>
@@ -190,16 +193,7 @@ const Login = () => {
           </CardContent>
         </Card>
       </Container>
-      <Box
-        component="img"
-        src={ARCSImage}
-        alt="ARCS"
-        sx={{
-          width: "100%",
-          maxHeight: "270px",
-          objectFit: "cover",
-        }}
-      />
+      <Footer />
     </Box>
   );
 };
