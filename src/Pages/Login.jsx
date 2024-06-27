@@ -114,7 +114,7 @@ const Login = () => {
         alt="ARCS"
         sx={{
           width: "100%",
-          maxHeight: "280px",
+          maxHeight: "310px",
           objectFit: "cover",
         }}
       />

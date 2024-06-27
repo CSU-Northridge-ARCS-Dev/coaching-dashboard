@@ -2,8 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
-import Insights from "./Pages/Insights";
-import Settings from "./Pages/Settings";
+import Admin from "./Pages/Admin";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PermissionProvider } from "react-permission-role";
 import { getFirestore } from "firebase/firestore";
@@ -35,8 +34,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/insights" element={<Insights />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </PermissionProvider>
     </BrowserRouter>

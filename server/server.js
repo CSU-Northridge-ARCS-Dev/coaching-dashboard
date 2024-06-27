@@ -19,6 +19,7 @@ app.use(
 
 app.use(express.json());
 
+// Update user role
 app.post("/updateRole", async (req, res) => {
   const { email, newRole } = req.body;
   try {
@@ -32,6 +33,48 @@ app.post("/updateRole", async (req, res) => {
     res.json({ success: true, message: `Role updated for ${email}` });
   } catch (error) {
     console.error("Error updating role:", error);
+    res
+      .status(500)
+      .json({ success: false, message: `Server error: ${error.message}` });
+  }
+});
+
+// Fetch all users
+app.get("/getUsers", async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const usersRef = db.collection("Users");
+    const snapshot = await usersRef.get();
+
+    let users = [];
+    for (const doc of snapshot.docs) {
+      let userData = doc.data();
+      // only user's with roles
+      if (userData.role) {
+        userData.id = doc.id;
+
+        // user details from Firebase Authentication
+        try {
+          const userRecord = await admin.auth().getUser(doc.id);
+          const [firstName, lastName] = userRecord.displayName.split(" ");
+          userData.firstName = firstName || "";
+          userData.lastName = lastName || "";
+          userData.email = userRecord.email;
+        } catch (authError) {
+          console.error(
+            `Error fetching auth details for user ${doc.id}:`,
+            authError
+          );
+          continue;
+        }
+
+        users.push(userData);
+      }
+    }
+
+    res.json({ success: true, users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
     res
       .status(500)
       .json({ success: false, message: `Server error: ${error.message}` });
