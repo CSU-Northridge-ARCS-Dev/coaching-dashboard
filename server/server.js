@@ -10,7 +10,6 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-// CORS configuration
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -49,14 +48,12 @@ app.get("/getUsers", async (req, res) => {
     let users = [];
     for (const doc of snapshot.docs) {
       let userData = doc.data();
-      // only user's with roles
       if (userData.role) {
         userData.id = doc.id;
 
-        // user details from Firebase Authentication
         try {
           const userRecord = await admin.auth().getUser(doc.id);
-          const [firstName, lastName] = userRecord.displayName.split(" ");
+          const [firstName, lastName] = userRecord.displayName ? userRecord.displayName.split(" ") : ["", ""];
           userData.firstName = firstName || "";
           userData.lastName = lastName || "";
           userData.email = userRecord.email;

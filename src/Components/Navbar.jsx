@@ -4,8 +4,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faHome,
-  faChartBar,
+  faTachometerAlt,
   faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -31,12 +30,25 @@ const Navbar = () => {
     fetchUserRole();
   }, [user, firestore]);
 
-  const handleLogout = () => {
-    signOut(auth);
+  const handleLogout = async () => {
+    await signOut(auth);
   };
 
   const displayName = user ? user.displayName : "";
   const [firstName, lastName] = displayName ? displayName.split(" ") : ["", ""];
+
+  const getDashboardPath = () => {
+    switch (role) {
+      case "admin":
+        return "/admin";
+      case "athlete":
+        return "/athlete";
+      case "coach":
+        return "/coach";
+      default:
+        return "/";
+    }
+  };
 
   return (
     <div className="tw-fixed tw-top-0 tw-left-0 tw-w-64 tw-h-full tw-bg-[#1F2A40] tw-shadow-lg tw-flex tw-flex-col tw-items-center tw-pt-10">
@@ -48,18 +60,22 @@ const Navbar = () => {
         <ul className="tw-flex tw-flex-col tw-space-y-6">
           <li>
             <Link
-              to="/home"
+              to={getDashboardPath()}
               className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
-                location.pathname === "/home" ? "tw-text-red-500" : ""
+                ["/admin", "/athlete", "/coach"].includes(location.pathname)
+                  ? "tw-text-red-500"
+                  : ""
               }`}
             >
-              <FontAwesomeIcon icon={faHome} />
+              <FontAwesomeIcon icon={faTachometerAlt} />
               <span
                 className={`${
-                  location.pathname === "/home" ? "tw-text-red-500" : ""
+                  ["/admin", "/athlete", "/coach"].includes(location.pathname)
+                    ? "tw-text-red-500"
+                    : ""
                 }`}
               >
-                Home
+                Dashboard
               </span>
             </Link>
           </li>

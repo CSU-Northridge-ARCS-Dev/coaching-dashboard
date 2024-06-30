@@ -4,11 +4,11 @@ import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Navbar from "../Components/Navbar";
 
-const Home = () => {
+const AthleteDashboard = () => {
   const [user] = useAuthState(getAuth());
   const navigate = useNavigate();
 
-  // First and last names 
+  // First and last names
   const displayName = user ? user.displayName : "";
   const [firstName, lastName] = displayName ? displayName.split(" ") : ["", ""];
 
@@ -23,10 +23,10 @@ const Home = () => {
     <div className="tw-flex tw-bg-black tw-min-h-screen">
       <Navbar />
       <div className="tw-flex-1 tw-ml-64 tw-p-4 tw-text-white">
-        <div className="tw-p-4"></div>
+        <div className="tw-p-4">This is the Athlete's Dashboard</div>
       </div>
     </div>
   );
 };
 
-export default Home;
+export default AthleteDashboard;

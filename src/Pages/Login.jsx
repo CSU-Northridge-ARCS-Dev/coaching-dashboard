@@ -42,11 +42,7 @@ const Login = () => {
       const firestore = getFirestore();
 
       // Sign in with email and password
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Retrieve user info from Firestore
@@ -54,6 +50,7 @@ const Login = () => {
       const userSnapshot = await getDoc(userDoc);
       if (userSnapshot.exists()) {
         const userData = userSnapshot.data();
+        console.log("User data:", userData);
         if (userData && userData.role) {
           // Set user context with role
           setUser({
@@ -62,14 +59,38 @@ const Login = () => {
             permissions: [],
           });
 
-          // Navigate with user details and role
-          navigate("/home", {
-            state: {
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              role: userData.role,
-            },
-          });
+          // Navigate based on user role
+          if (userData.role === "admin") {
+            console.log("Navigating to admin page");
+            navigate("/admin", {
+              state: {
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                role: userData.role,
+              },
+            });
+          } else if (userData.role === "athlete") {
+            console.log("Navigating to athlete dashboard");
+            navigate("/athlete", {
+              state: {
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                role: userData.role,
+              },
+            });
+          } else if (userData.role === "coach") {
+            console.log("Navigating to coach dashboard");
+            navigate("/coach", {
+              state: {
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                role: userData.role,
+              },
+            });
+          } else {
+            console.log("Role not found in user data");
+            navigate("/home");
+          }
         } else {
           console.log("Role not found in user data");
           navigate("/home");
@@ -79,7 +100,6 @@ const Login = () => {
         navigate("/home");
       }
     } catch (error) {
-      // Handle specific errors and set appropriate error messages and states
       if (error.code === "auth/user-not-found") {
         setError("Email is incorrect");
         setEmailError(true);

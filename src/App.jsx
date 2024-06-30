@@ -1,14 +1,16 @@
 import React from "react";
-import ReactDOM from "react-dom";
-import Home from "./Pages/Home";
+import { createRoot } from "react-dom/client";
 import Login from "./Pages/Login";
 import Admin from "./Pages/Admin";
+import AthleteDashboard from "./Pages/AthleteDashboard";
+import CoachDashboard from "./Pages/CoachDashboard";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PermissionProvider } from "react-permission-role";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import "./style.css";
+import ProtectedRoute from "./Components/ProtectedRoute"; 
 
 // Firebase configuration
 const firebaseConfig = {
@@ -33,12 +35,36 @@ const App = () => {
       <PermissionProvider>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin" redirectPath="/home">
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/athlete"
+            element={
+              <ProtectedRoute requiredRole="athlete" redirectPath="/home">
+                <AthleteDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/coach"
+            element={
+              <ProtectedRoute requiredRole="coach" redirectPath="/home">
+                <CoachDashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </PermissionProvider>
     </BrowserRouter>
   );
 };
 
-ReactDOM.render(<App />, document.getElementById("root"));
+const rootElement = document.getElementById("root");
+const root = createRoot(rootElement); 
+root.render(<App />);
