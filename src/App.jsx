@@ -1,16 +1,18 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import Login from "./Pages/Login";
-import Admin from "./Pages/Admin";
-import AthleteDashboard from "./Pages/AthleteDashboard";
-import CoachDashboard from "./Pages/CoachDashboard";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PermissionProvider } from "react-permission-role";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import ProtectedRoute from "./Components/ProtectedRoute";
+import Login from "./Pages/Login";
+import Admin from "./Pages/Admin";
+import AthleteDashboard from "./Pages/AthleteDashboard";
+import CoachDashboard from "./Pages/CoachDashboard";
+import HeartPage from "./Pages/HeartPage";
+import SleepPage from "./Pages/SleepPage";
 import "./style.css";
-import ProtectedRoute from "./Components/ProtectedRoute"; 
 
 // Firebase configuration
 const firebaseConfig = {
@@ -38,7 +40,7 @@ const App = () => {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute requiredRole="admin" redirectPath="/home">
+              <ProtectedRoute requiredRole="admin" redirectPath="/athlete">
                 <Admin />
               </ProtectedRoute>
             }
@@ -46,7 +48,7 @@ const App = () => {
           <Route
             path="/athlete"
             element={
-              <ProtectedRoute requiredRole="athlete" redirectPath="/home">
+              <ProtectedRoute requiredRole="athlete" redirectPath="/coach">
                 <AthleteDashboard />
               </ProtectedRoute>
             }
@@ -54,8 +56,24 @@ const App = () => {
           <Route
             path="/coach"
             element={
-              <ProtectedRoute requiredRole="coach" redirectPath="/home">
+              <ProtectedRoute requiredRole="coach" redirectPath="/admin">
                 <CoachDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/heart"
+            element={
+              <ProtectedRoute requiredRole="athlete" redirectPath="/home">
+                <HeartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sleep"
+            element={
+              <ProtectedRoute requiredRole="athlete" redirectPath="/home">
+                <SleepPage />
               </ProtectedRoute>
             }
           />
@@ -66,5 +84,5 @@ const App = () => {
 };
 
 const rootElement = document.getElementById("root");
-const root = createRoot(rootElement); 
+const root = createRoot(rootElement);
 root.render(<App />);

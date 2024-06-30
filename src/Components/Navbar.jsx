@@ -5,7 +5,9 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTachometerAlt,
+  faHeartbeat,
   faSignOutAlt,
+  faBed,
 } from "@fortawesome/free-solid-svg-icons";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
@@ -18,7 +20,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      if (user) {
+      if (user && !role) {
         const userDoc = doc(firestore, "Users", user.uid);
         const userSnapshot = await getDoc(userDoc);
         if (userSnapshot.exists()) {
@@ -28,7 +30,7 @@ const Navbar = () => {
       }
     };
     fetchUserRole();
-  }, [user, firestore]);
+  }, [user, firestore, role]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -79,6 +81,44 @@ const Navbar = () => {
               </span>
             </Link>
           </li>
+          {role === "athlete" && (
+            <>
+              <li>
+                <Link
+                  to="/heart"
+                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
+                    location.pathname === "/heart" ? "tw-text-red-500" : ""
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faHeartbeat} />
+                  <span
+                    className={`${
+                      location.pathname === "/heart" ? "tw-text-red-500" : ""
+                    }`}
+                  >
+                    Heart Data
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/sleep"
+                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
+                    location.pathname === "/sleep" ? "tw-text-red-500" : ""
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faBed} />
+                  <span
+                    className={`${
+                      location.pathname === "/sleep" ? "tw-text-red-500" : ""
+                    }`}
+                  >
+                    Sleep Data
+                  </span>
+                </Link>
+              </li>
+            </>
+          )}
           <li>
             <button
               onClick={handleLogout}
