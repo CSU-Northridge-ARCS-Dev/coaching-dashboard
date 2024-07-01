@@ -74,11 +74,23 @@ const SleepGraph = () => {
           display: true,
           text: "Hours",
         },
+        grid: {
+          color: "#ffffff",
+        },
+        ticks: {
+          color: "#ffffff",
+        },
       },
       x: {
         title: {
           display: true,
           text: "Sleep Stages",
+        },
+        grid: {
+          color: "#ffffff",
+        },
+        ticks: {
+          color: "#ffffff",
         },
       },
     },

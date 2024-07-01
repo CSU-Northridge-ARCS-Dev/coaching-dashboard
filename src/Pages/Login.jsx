@@ -42,7 +42,11 @@ const Login = () => {
       const firestore = getFirestore();
 
       // Sign in with email and password
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       // Retrieve user info from Firestore
@@ -52,6 +56,12 @@ const Login = () => {
         const userData = userSnapshot.data();
         console.log("User data:", userData);
         if (userData && userData.role) {
+          console.log("Setting user context", {
+            id: user.uid,
+            roles: [userData.role],
+            permissions: [],
+          });
+
           // Set user context with role
           setUser({
             id: user.uid,

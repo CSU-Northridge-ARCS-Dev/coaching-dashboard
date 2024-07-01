@@ -2,9 +2,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PermissionProvider } from "react-permission-role";
-import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Login from "./Pages/Login";
 import Admin from "./Pages/Admin";
@@ -40,7 +40,7 @@ const App = () => {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute requiredRole="admin" redirectPath="/athlete">
+              <ProtectedRoute requiredRole="admin">
                 <Admin />
               </ProtectedRoute>
             }
@@ -48,7 +48,7 @@ const App = () => {
           <Route
             path="/athlete"
             element={
-              <ProtectedRoute requiredRole="athlete" redirectPath="/coach">
+              <ProtectedRoute requiredRole="athlete">
                 <AthleteDashboard />
               </ProtectedRoute>
             }
@@ -56,7 +56,7 @@ const App = () => {
           <Route
             path="/coach"
             element={
-              <ProtectedRoute requiredRole="coach" redirectPath="/admin">
+              <ProtectedRoute requiredRole="coach">
                 <CoachDashboard />
               </ProtectedRoute>
             }
@@ -64,7 +64,7 @@ const App = () => {
           <Route
             path="/heart"
             element={
-              <ProtectedRoute requiredRole="athlete" redirectPath="/home">
+              <ProtectedRoute requiredRole="athlete">
                 <HeartPage />
               </ProtectedRoute>
             }
@@ -72,7 +72,7 @@ const App = () => {
           <Route
             path="/sleep"
             element={
-              <ProtectedRoute requiredRole="athlete" redirectPath="/home">
+              <ProtectedRoute requiredRole="athlete">
                 <SleepPage />
               </ProtectedRoute>
             }

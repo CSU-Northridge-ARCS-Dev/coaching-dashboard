@@ -4,6 +4,7 @@ import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Navbar from "../Components/Navbar";
 import SleepGraph from "../Components/SleepGraph";
+import Header from "../Components/Header";
 
 const SleepPage = () => {
   const [user] = useAuthState(getAuth());
@@ -24,8 +25,8 @@ const SleepPage = () => {
     <div className="tw-flex tw-bg-black tw-min-h-screen">
       <Navbar />
       <div className="tw-flex-1 tw-ml-64 tw-p-4 tw-text-white">
-        <div className="tw-p-4">This is the Athlete's Sleep Data</div>
-        <SleepGraph /> 
+        <Header pageTitle="Sleep Graph" />
+        <SleepGraph />
       </div>
     </div>
   );

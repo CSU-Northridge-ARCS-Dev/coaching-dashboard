@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Navbar from "../Components/Navbar";
-import HeartGraph from "../Components/HeartGraph"; 
+import HeartGraph from "../Components/HeartGraph";
+import Header from "../Components/Header";
 
 const HeartPage = () => {
   const [user] = useAuthState(getAuth());
@@ -24,7 +25,7 @@ const HeartPage = () => {
     <div className="tw-flex tw-bg-black tw-min-h-screen">
       <Navbar />
       <div className="tw-flex-1 tw-ml-64 tw-p-4 tw-text-white">
-        <div className="tw-p-4">This is the Athlete's Heart Data</div>
+        <Header pageTitle="Heart Graph" /> 
         <HeartGraph /> 
       </div>
     </div>
