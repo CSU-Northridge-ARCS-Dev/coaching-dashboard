@@ -8,6 +8,8 @@ import {
   faHeartbeat,
   faSignOutAlt,
   faBed,
+  faUser,
+  faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
@@ -114,6 +116,44 @@ const Navbar = () => {
                     }`}
                   >
                     Sleep Data
+                  </span>
+                </Link>
+              </li>
+            </>
+          )}
+          {role === "coach" && (
+            <>
+              <li>
+                <Link
+                  to="/info"
+                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
+                    location.pathname === "/info" ? "tw-text-red-500" : ""
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faUser} />
+                  <span
+                    className={`${
+                      location.pathname === "/info" ? "tw-text-red-500" : ""
+                    }`}
+                  >
+                    Athlete Info
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/invitation"
+                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
+                    location.pathname === "/invitation" ? "tw-text-red-500" : ""
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faEnvelope} />
+                  <span
+                    className={`${
+                      location.pathname === "/invitation" ? "tw-text-red-500" : ""
+                    }`}
+                  >
+                    Invite
                   </span>
                 </Link>
               </li>

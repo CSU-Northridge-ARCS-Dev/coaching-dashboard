@@ -10,8 +10,10 @@ import Login from "./Pages/Login";
 import Admin from "./Pages/Admin";
 import AthleteDashboard from "./Pages/AthleteDashboard";
 import CoachDashboard from "./Pages/CoachDashboard";
+import AthleteInfo from "./Pages/AthleteInfo";
 import HeartPage from "./Pages/HeartPage";
 import SleepPage from "./Pages/SleepPage";
+import Invitation from "./Pages/Invitation";
 import "./style.css";
 
 // Firebase configuration
@@ -74,6 +76,22 @@ const App = () => {
             element={
               <ProtectedRoute requiredRole="athlete">
                 <SleepPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/info"
+            element={
+              <ProtectedRoute requiredRole="coach">
+                <AthleteInfo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invitation"
+            element={
+              <ProtectedRoute requiredRole="coach">
+                <Invitation />
               </ProtectedRoute>
             }
           />

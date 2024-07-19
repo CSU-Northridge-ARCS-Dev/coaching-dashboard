@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { IconButton } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import React, { useState } from "react";
+import { IconButton } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 
 const Header = ({ pageTitle }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -15,8 +15,8 @@ const Header = ({ pageTitle }) => {
   };
 
   const formatDate = (date) => {
-    const options = { month: 'long', day: 'numeric' };
-    return new Intl.DateTimeFormat('en-US', options).format(date);
+    const options = { month: "long", day: "numeric" };
+    return new Intl.DateTimeFormat("en-US", options).format(date);
   };
 
   return (
@@ -24,12 +24,9 @@ const Header = ({ pageTitle }) => {
       <div className="tw-text-2xl tw-font-bold">{pageTitle}</div>
       <div className="tw-text-xl">{formatDate(selectedDate)}</div>
       <div className="tw-flex tw-items-center">
-        <input 
-          type="date" 
-          className="tw-hidden"
-          onChange={handleDateChange}
-        />
+        <input type="date" className="tw-hidden" onChange={handleDateChange} />
         <IconButton onClick={handleIconClick}>
+          <h1 className="tw-text-white tw-pr-4">Date Selector</h1>
           <FontAwesomeIcon icon={faCalendarAlt} className="tw-text-white" />
         </IconButton>
       </div>

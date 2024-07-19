@@ -57,6 +57,7 @@ app.get("/getUsers", async (req, res) => {
           userData.firstName = firstName || "";
           userData.lastName = lastName || "";
           userData.email = userRecord.email;
+          userData.sports = userData.sports || "N/A";
         } catch (authError) {
           console.error(
             `Error fetching auth details for user ${doc.id}:`,
