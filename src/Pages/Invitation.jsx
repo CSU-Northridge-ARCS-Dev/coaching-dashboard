@@ -1,16 +1,28 @@
-import React, { useState } from "react";
-import { Container, Typography, TextField, Button, Paper } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Container, Typography, Paper } from "@mui/material";
 import Navbar from "../Components/Navbar";
+import InviteForm from "../Components/InviteForm";
+import PendingInvitations from "../Components/PendingInvitations";
+import { fetchPendingInvitations } from "../Utils/fetchPendingInvitations"; // Ensure utility is created
+import { auth } from "../../firebaseConfig"; // Firebase auth config
 
 const Invitation = () => {
-  const location = useLocation();
-  const { state } = location;
-  const [message, setMessage] = useState("");
+  const [pendingInvitations, setPendingInvitations] = useState([]);
 
-  const handleSendMessage = () => {
-    console.log("Message sent:", message);
+  // Fetch pending invitations for the coach
+  const loadPendingInvitations = async () => {
+    try {
+      const coachId = auth.currentUser.uid; // Get current coach ID
+      const data = await fetchPendingInvitations(coachId);
+      setPendingInvitations(data);
+    } catch (error) {
+      console.error("Error fetching pending invitations:", error);
+    }
   };
+
+  useEffect(() => {
+    loadPendingInvitations();
+  }, []);
 
   return (
     <div className="tw-flex tw-flex-col tw-min-h-screen tw-bg-black">
@@ -23,31 +35,16 @@ const Invitation = () => {
             gutterBottom
             style={{ color: "white" }}
           >
-            Send Message to {state?.user?.fullName || "Athlete"}
+            Invite Athlete
           </Typography>
-          <Paper
-            elevation={3}
-            sx={{ p: 3, backgroundColor: "white", color: "black" }}
-          >
-            <TextField
-              label="Message"
-              multiline
-              rows={6}
-              variant="outlined"
-              fullWidth
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSendMessage}
-              fullWidth
-            >
-              Send Message
-            </Button>
+
+          <Paper elevation={3} sx={{ p: 3, backgroundColor: "white", color: "black" }}>
+            {/* Invite Form */}
+            <InviteForm onInviteSent={loadPendingInvitations} />
           </Paper>
+
+          {/* Pending Invitations */}
+          <PendingInvitations pendingInvitations={pendingInvitations} />
         </Container>
       </div>
     </div>
