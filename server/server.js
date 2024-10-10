@@ -5,7 +5,7 @@ const app = express();
 const port = 3000;
 
 // Initialize Firebase Admin with the service account key
-const serviceAccount = require("./firebase-service-account.json");
+const serviceAccount = require("./firebase-service-account-prototype.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });

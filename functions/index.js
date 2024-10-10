@@ -8,6 +8,12 @@ admin.initializeApp();
 const db = admin.firestore();
 const expo = new Expo();
 
+/**
+ * Sends a push notification to a specific device using Expo push token.
+ *
+ * @param {string} pushToken - The Expo push token of the user's device.
+ * @param {string} message - The message to be sent in the push notification.
+ */
 function sendPushNotification(pushToken, message) {
   const messages = [
     {
@@ -49,7 +55,7 @@ exports.sendInvitationNotification = functions.firestore
           if (userData.expoPushToken) {
             sendPushNotification(
               userData.expoPushToken,
-              "You've received a new invitation!"
+              "You've received a new invitation!",
             );
           }
         });
