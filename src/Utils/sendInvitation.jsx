@@ -1,5 +1,5 @@
 // Coaching-Dashboard/src/utils/sendInvitation.js
-import { collection, doc, addDoc, getDoc, updateDoc, arrayUnion  } from "firebase/firestore";
+import { query, collection, doc, where, addDoc, getDoc, getDocs, updateDoc, arrayUnion  } from "firebase/firestore";
 import { auth, db } from "../../firebaseConfig"; // Ensure proper Firebase config import
 import axios from "axios";
 
@@ -35,6 +35,27 @@ export const sendInvitation = async (athleteEmail) => {
     });
     console.log("Invitation ID added to coach's document.");
     
+
+
+    // Query the Users collection to find the document with the specified athleteEmail
+    const userRef = collection(db, "Users");
+    const athleteQuery = query(userRef, 
+      where("email", "==", athleteEmail));
+    const querySnapshot = await getDocs(athleteQuery);
+    if(querySnapshot.empty) {
+      console.log("No user found with the specified athlete email");
+    }
+    const athleteDoc = querySnapshot.docs[0]; // Email must be unique
+    const athleteId = athleteDoc.id;
+    console.log("Athlete ID found:", athleteId);
+    // Append the coachId to the athlete's pendingPermissions array
+    const athleteRef = doc(db, "Users", athleteId);
+    await updateDoc(athleteRef, {
+      pendingPermissions: arrayUnion(coachId),
+    });
+    console.log(`Coach ID ${coachId} added to athlete's pendingPermissions.`);
+
+
 
     // Email Service Here
     // const response = await axios.post("http://localhost:3001/send-invitation", {
