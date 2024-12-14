@@ -14,9 +14,35 @@ export const sendInvitation = async (athleteEmail) => {
     const coachLastName = userData.lastName;
     //const institution = userData.institution;
 
+    // Query the Users collection to find the document with the specified athleteEmail
+    const userRef = collection(db, "Users");
+    const athleteQuery = query(userRef, where("email", "==", athleteEmail));
+    const querySnapshot = await getDocs(athleteQuery);
+
+    if (querySnapshot.empty) {
+      console.log("No user found with the specified athlete email");
+      return "No user found with the specified athlete email";
+    }
+
+    // Fetch athlete's document
+    const athleteDoc = querySnapshot.docs[0]; // Email must be unique
+    const athleteId = athleteDoc.id;
+    console.log("Athlete ID found:", athleteId);
+
+    // Check if the coach is already in the athlete's coachList
+    const athleteData = athleteDoc.data();
+    const athleteCoachList = athleteData.coachList || []; // Default to empty array if undefined
+    const coachRefPath = `Users/${coachId}`;
+    const isCoachInCoachList = athleteCoachList.some(
+      (coachRef) => coachRef.path === coachRefPath
+    );
+    if (isCoachInCoachList) {
+      console.log("Coach is already tracking the athlete. Invitation not sent.");
+      return "Coach is already tracking the athlete.";
+    }
+
     // Reference the Invitations collection
     const invitationsRef = collection(db, "Invitations");
-
     // Add a new document to the Invitations collection and store the document reference
     const newInvitationRef = await addDoc(invitationsRef, {
       coachId,
@@ -27,7 +53,6 @@ export const sendInvitation = async (athleteEmail) => {
       athleteEmail,
       status: "pending",
     });
-
     console.log("Invitation sent successfully with ID:", newInvitationRef.id);
 
     // Add the invitation reference to the coach's document (under invitationsSent array)
@@ -37,29 +62,24 @@ export const sendInvitation = async (athleteEmail) => {
     });
     console.log("Invitation reference added to coach's document.");
 
-    // Query the Users collection to find the document with the specified athleteEmail
-    const userRef = collection(db, "Users");
-    const athleteQuery = query(userRef, where("email", "==", athleteEmail));
-    const querySnapshot = await getDocs(athleteQuery);
+    
 
-    if (querySnapshot.empty) {
-      console.log("No user found with the specified athlete email");
-      return;
-    }
+    // if (querySnapshot.empty) {
+    //   console.log("No user found with the specified athlete email");
+    //   return;
+    // }
 
-    // Fetch athlete's document
-    const athleteDoc = querySnapshot.docs[0]; // Email must be unique
-    const athleteId = athleteDoc.id;
-    console.log("Athlete ID found:", athleteId);
-
+    
     // Append the coach reference to the athlete's pendingPermissions array
     const athleteRef = doc(db, "Users", athleteId);
     await updateDoc(athleteRef, {
       pendingPermissions: arrayUnion(doc(db, "Users", coachId)), // Store reference to the coach document
     });
     console.log(`Coach reference added to athlete's pendingPermissions.`);
+    return "Inviation sent successfully.";
   } catch (error) {
     console.error("Error sending invitation:", error);
+    return "Error sending invitation";
   }
 };
 

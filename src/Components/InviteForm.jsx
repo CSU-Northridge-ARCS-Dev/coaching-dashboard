@@ -11,16 +11,26 @@ const InviteForm = ({ onInviteSent }) => {
       setStatus("Please enter a valid email address.");
       return;
     }
-
     try {
-      await sendInvitation(athleteEmail);
-      setStatus("Invitation sent successfully.");
-      setAthleteEmail(""); // Clear the input field
-      onInviteSent(); // Update the pending invitations list
+      const result = await sendInvitation(athleteEmail); // Get the returned status
+      setStatus(result); // Set the status message
+      if (result === "Invitation sent successfully.") {
+        setAthleteEmail(""); // Clear the input field only if successful
+        onInviteSent(); // Update the pending invitations list
+      }
     } catch (error) {
       console.error("Error sending invitation:", error);
-      setStatus("Error sending invitation.");
+      setStatus("Unexpected error occurred while sending invitation.");
     }
+    // try {
+    //   await sendInvitation(athleteEmail);
+    //   setStatus("Invitation sent successfully.");
+    //   setAthleteEmail(""); // Clear the input field
+    //   onInviteSent(); // Update the pending invitations list
+    // } catch (error) {
+    //   console.error("Error sending invitation:", error);
+    //   setStatus("Error sending invitation.");
+    // }
   };
 
   return (
