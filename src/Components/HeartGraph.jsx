@@ -21,17 +21,31 @@ ChartJS.register(
   Legend
 );
 
-const HeartGraph = () => {
-  const generateRandomData = () => {
-    return Array.from({ length: 24 }, () => Math.floor(Math.random() * 101)); 
-  };
+const HeartGraph = ({ heartRateData }) => {
+  // Prepare labels (hours) for 24 hours of the day
+  const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+
+  // Initialize an array to store the max heart rate for each hour
+  const maxHeartRatePerHour = Array(24).fill(0); // Default value is 0 for missing hours
+
+  // Filter data for the specific date "2024-07-03"
+  const filteredData = heartRateData.filter((entry) =>
+    entry.time.startsWith("2024-07-03")
+  );
+
+  // Map over filtered data to update max heart rate per hour
+  filteredData.forEach((entry) => {
+    const date = new Date(entry.time);
+    const hour = date.getUTCHours(); // Get the hour in UTC (or use `getHours()` for local time)
+    maxHeartRatePerHour[hour] = entry.beatsPerMinute; // Set the heart rate for the corresponding hour
+  });
 
   const data = {
-    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`), 
+    labels: hours, // X-axis: Time in hours
     datasets: [
       {
         label: "Max Heart Rate",
-        data: generateRandomData(),
+        data: maxHeartRatePerHour, // Y-axis: BPM data
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         pointStyle: "circle",
@@ -46,7 +60,7 @@ const HeartGraph = () => {
     plugins: {
       title: {
         display: true,
-        text: "Max Heart Rate Per Hour",
+        text: "Max Heart Rate Per Hour for 2024-07-03",
       },
     },
     scales: {
@@ -70,7 +84,7 @@ const HeartGraph = () => {
           color: "#ffffff",
         },
         min: 0,
-        max: 150,
+        max: 150, // Adjust max value as needed based on actual data range
         grid: {
           color: "#ffffff",
         },
