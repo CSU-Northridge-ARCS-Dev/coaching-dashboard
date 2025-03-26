@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -13,12 +13,29 @@ const AthleteInfo = () => {
   const location = useLocation();
   const athlete = location.state?.user;
 
+  const [heartRateData, setHeartRateData] = useState([]);
+  const [sleepData, setSleepData] = useState([]);
+
   // Checks if user is signed in
   useEffect(() => {
     if (!user) {
       navigate("/");
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!athlete?.id) return;
+      const heartRes = await fetch(`http://localhost:3000/getHeartRate?userId=${athlete.id}`);
+      const sleepRes = await fetch(`http://localhost:3000/getSleepData?userId=${athlete.id}`);
+      const heartData = await heartRes.json();
+      const sleep = await sleepRes.json();
+  
+      setHeartRateData(heartData.heartRateData || []);
+      setSleepData(sleep.sleepData || []);
+    };
+    fetchData();
+  }, [athlete]);
 
   return (
     <div className="tw-flex tw-bg-black tw-min-h-screen tw-flex-col">
@@ -35,10 +52,10 @@ const AthleteInfo = () => {
         </div>
         <div className="tw-flex tw-justify-between tw-gap-4">
           <div className="tw-flex-1 tw-bg-gray-800 tw-p-4 tw-rounded-lg">
-            <HeartGraph />
+            <HeartGraph heartRateData={heartRateData} />
           </div>
           <div className="tw-flex-1 tw-bg-gray-800 tw-p-4 tw-rounded-lg">
-            <SleepGraph />
+            <SleepGraph sleepData={sleepData} />
           </div>
         </div>
       </div>

@@ -19,18 +19,7 @@ ChartJS.register(
   Legend
 );
 
-const SleepGraph = () => {
-  const generateRandomData = () => {
-    return {
-      deepSleep: Math.floor(Math.random() * 5) + 1,
-      coreSleep: Math.floor(Math.random() * 5) + 1,
-      remSleep: Math.floor(Math.random() * 5) + 1,
-      awake: Math.floor(Math.random() * 3) + 1,
-    };
-  };
-
-  const sleepData = generateRandomData();
-
+const SleepGraph = ({ sleepData }) => {
   const data = {
     labels: ["Deep Sleep", "Core Sleep", "REM Sleep", "Awake"],
     datasets: [
@@ -64,7 +53,7 @@ const SleepGraph = () => {
     plugins: {
       title: {
         display: true,
-        text: "Sleep Stages",
+        text: "Sleep Stages (Hours)",
       },
     },
     scales: {
