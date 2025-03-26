@@ -41,6 +41,14 @@ const InviteForm = ({ onInviteSent }) => {
         placeholder="Athlete Email"
         value={athleteEmail}
         onChange={(e) => setAthleteEmail(e.target.value)}
+        style={{
+          backgroundColor: "#222", // dark background
+          color: "#fff",           // white text
+          padding: "8px",
+          borderRadius: "4px",
+          border: "1px solid #555",
+          marginRight: "10px"
+        }}
       />
       <button onClick={handleInvite}>Send Invite</button>
       {status && <p>{status}</p>}

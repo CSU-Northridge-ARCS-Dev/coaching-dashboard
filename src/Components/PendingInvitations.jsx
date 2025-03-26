@@ -6,11 +6,11 @@ const PendingInvitations = ({ pendingInvitations }) => {
     <div>
       <h3>Pending Invitations</h3>
       <ul>
-        {pendingInvitations.map((invitation, index) => (
+        {/* {pendingInvitations.map((invitation, index) => (
           <li key={index}>
             Athlete Email: {invitation.athleteEmail}
           </li>
-        ))}
+        ))} */}
       </ul>
     </div>
   );
