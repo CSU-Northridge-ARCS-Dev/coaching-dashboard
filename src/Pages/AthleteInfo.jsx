@@ -46,13 +46,13 @@ const AthleteInfo = () => {
         </div>
 
         <div className="tw-grid tw-grid-cols-1 tw-gap-4">
-  <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
-    <HeartGraph heartRateData={heartRateData} />
-  </div>
-  <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
-    <SleepGraph sleepData={sleepData} />
-  </div>
-</div>
+          <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
+            <HeartGraph heartRateData={heartRateData} />
+          </div>
+          <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
+            <SleepGraph sleepData={sleepData} />
+          </div>
+        </div>
 
         {/* <div className="tw-flex tw-gap-4">
           <div className="tw-flex-1 tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">

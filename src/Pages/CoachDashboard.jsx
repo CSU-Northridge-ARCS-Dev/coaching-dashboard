@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { AllowedAccess } from "react-permission-role";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
+import { getAuth } from "firebase/auth";
 import {
   Container,
   Typography,
@@ -20,8 +21,18 @@ const CoachDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error("No authenticated user found");
+        setMessage("Not signed in.");
+        setLoading(false);
+        return;
+      }
       try {
-        const response = await fetch("http://localhost:3000/getUsers");
+        //const response = await fetch("http://localhost:3000/getUsers");
+        const response = await fetch(`http://localhost:3000/getUsers?coachId=${user.uid}`);
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }

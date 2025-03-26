@@ -39,48 +39,106 @@ app.post("/updateRole", async (req, res) => {
   }
 });
 
-// Fetch all users
+// Fetch authorized athletes for a coach
 app.get("/getUsers", async (req, res) => {
+  const coachId = req.query.coachId; // e.g., passed as ?coachId=123abc
+
+  if (!coachId) {
+    return res.status(400).json({ success: false, message: "Missing coachId" });
+  }
+
   try {
     const db = admin.firestore();
-    const usersRef = db.collection("Users");
-    const snapshot = await usersRef.get();
+    const coachRef = db.collection("Users").doc(coachId);
+    const coachDoc = await coachRef.get();
 
-    let users = [];
-    for (const doc of snapshot.docs) {
-      let userData = doc.data();
-      if (userData.role) {
-        userData.id = doc.id;
+    if (!coachDoc.exists) {
+      return res.status(404).json({ success: false, message: "Coach not found" });
+    }
 
-        try {
-          const userRecord = await admin.auth().getUser(doc.id);
-          const [firstName, lastName] = userRecord.displayName
-            ? userRecord.displayName.split(" ")
-            : ["", ""];
-          userData.firstName = firstName || "";
-          userData.lastName = lastName || "";
-          userData.email = userRecord.email;
-          userData.sports = userData.sports || "N/A";
-        } catch (authError) {
-          console.error(
-            `Error fetching auth details for user ${doc.id}:`,
-            authError
-          );
-          continue;
-        }
+    const coachData = coachDoc.data();
+    const authorizedAthletes = coachData.authorizedAthletes || [];
 
-        users.push(userData);
+    if (!authorizedAthletes.length) {
+      return res.json({ success: true, users: [] }); // No athletes authorized
+    }
+
+    const users = [];
+
+    for (const athleteRef of authorizedAthletes) {
+      try {
+        const athleteDoc = await athleteRef.get();
+        if (!athleteDoc.exists) continue;
+
+        const athleteData = athleteDoc.data();
+        const userRecord = await admin.auth().getUser(athleteDoc.id);
+
+        const [firstName, lastName] = userRecord.displayName
+          ? userRecord.displayName.split(" ")
+          : ["", ""];
+
+        users.push({
+          id: athleteDoc.id,
+          firstName,
+          lastName,
+          email: userRecord.email,
+          sports: athleteData.sports || "N/A",
+          role: athleteData.role || "athlete", // fallback
+        });
+      } catch (err) {
+        console.warn("Skipping athlete due to error:", err.message);
+        continue;
       }
     }
 
-    res.json({ success: true, users });
+    return res.json({ success: true, users });
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res
-      .status(500)
-      .json({ success: false, message: `Server error: ${error.message}` });
+    console.error("Error fetching authorized athletes:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
+// Fetch all users
+// app.get("/getUsers", async (req, res) => {
+//   try {
+//     const db = admin.firestore();
+//     const usersRef = db.collection("Users");
+//     const snapshot = await usersRef.get();
+
+//     let users = [];
+//     for (const doc of snapshot.docs) {
+//       let userData = doc.data();
+//       if (userData.role) {
+//         userData.id = doc.id;
+
+//         try {
+//           const userRecord = await admin.auth().getUser(doc.id);
+//           const [firstName, lastName] = userRecord.displayName
+//             ? userRecord.displayName.split(" ")
+//             : ["", ""];
+//           userData.firstName = firstName || "";
+//           userData.lastName = lastName || "";
+//           userData.email = userRecord.email;
+//           userData.sports = userData.sports || "N/A";
+//         } catch (authError) {
+//           console.error(
+//             `Error fetching auth details for user ${doc.id}:`,
+//             authError
+//           );
+//           continue;
+//         }
+
+//         users.push(userData);
+//       }
+//     }
+
+//     res.json({ success: true, users });
+//   } catch (error) {
+//     console.error("Error fetching users:", error);
+//     res
+//       .status(500)
+//       .json({ success: false, message: `Server error: ${error.message}` });
+//   }
+// });
 
 // Player's Heart Rate Graph
 app.get("/getHeartRate", async (req, res) => {
