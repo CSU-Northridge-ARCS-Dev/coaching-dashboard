@@ -9,3 +9,4 @@ dist/
 # Local Netlify folder
 .netlify
 firebas.json
+server/firebase-service-account-prototype.json

@@ -5,7 +5,8 @@ const app = express();
 const port = 3000;
 
 // Firebase Admin account key
-const serviceAccount = require("./firebas.json");
+//const serviceAccount = require("./firebas.json");
+const serviceAccount = require("./firebase-service-account-prototype.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -122,7 +123,8 @@ app.get("/getHeartRate", async (req, res) => {
 // Player's Sleep Rate Graph
 app.get("/getSleepData", async (req, res) => {
   const { userId } = req.query; 
-  const targetDate = "2024-07-03";
+  //const targetDate = "2024-07-03";
+  const targetDate = req.query.date;
 
   try {
     const db = admin.firestore();
