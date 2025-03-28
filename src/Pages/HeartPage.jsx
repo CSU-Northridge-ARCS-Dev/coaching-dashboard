@@ -33,29 +33,65 @@ const HeartPage = () => {
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
+  
       const data = await response.json();
       console.log("Fetched heart rate data:", data);
-      
-      // Check if the data contains heartRateData and it's an array
+  
       if (data.success && Array.isArray(data.heartRateData)) {
-        const now = new Date();
-        const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-        const filteredData = data.heartRateData
-          .filter((entry) => {
-            const entryTime = new Date(entry.time);
-            return entryTime >= last24Hours && entryTime <= now;
-          })
+        const sorted = data.heartRateData
+          .filter((entry) => !isNaN(new Date(entry.time))) // skip bad timestamps
           .sort((a, b) => new Date(a.time) - new Date(b.time));
+  
+        if (sorted.length === 0) {
+          setHeartRateData([]);
+          return;
+        }
+  
+        const latestTime = new Date(sorted[sorted.length - 1].time);
+        const windowStart = new Date(latestTime.getTime() - 6 * 60 * 60 * 1000); // last 6 hours
+  
+        const filteredData = sorted.filter((entry) => {
+          const time = new Date(entry.time);
+          return time >= windowStart && time <= latestTime;
+        });
+  
         setHeartRateData(filteredData);
-        //setHeartRateData(data.heartRateData); // Store the heart rate data in state
       } else {
         console.error("Invalid data format:", data);
       }
     } catch (error) {
       console.error("Error fetching heart rate data:", error);
     }
-  };
+  };  
+  // const fetchHeartRateData = async () => {
+  //   try {
+  //     const response = await fetch(`http://localhost:3000/getHeartRate?userId=${user.uid}`);
+  //     if (!response.ok) {
+  //       throw new Error("Network response was not ok");
+  //     }
+  //     const data = await response.json();
+  //     console.log("Fetched heart rate data:", data);
+      
+  //     // Check if the data contains heartRateData and it's an array
+  //     if (data.success && Array.isArray(data.heartRateData)) {
+  //       const now = new Date();
+  //       const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  //       const filteredData = data.heartRateData
+  //         .filter((entry) => {
+  //           const entryTime = new Date(entry.time);
+  //           return entryTime >= last24Hours && entryTime <= now;
+  //         })
+  //         .sort((a, b) => new Date(a.time) - new Date(b.time));
+  //       setHeartRateData(filteredData);
+  //       //setHeartRateData(data.heartRateData); // Store the heart rate data in state
+  //     } else {
+  //       console.error("Invalid data format:", data);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching heart rate data:", error);
+  //   }
+  // };
 
   return (
     <div className="tw-flex tw-bg-black tw-min-h-screen">

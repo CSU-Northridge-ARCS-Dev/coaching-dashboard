@@ -31,7 +31,50 @@ const AthleteInfo = () => {
       const heartData = await heartRes.json();
       const sleep = await sleepRes.json();
   
-      setHeartRateData(heartData.heartRateData || []);
+      //setHeartRateData(heartData.heartRateData || []);
+      if (heartData.heartRateData) {
+        // const now = new Date();
+        // const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+      
+        // console.log("Now:", now.toISOString());
+        // console.log("6 hours ago:", sixHoursAgo.toISOString());
+      
+        // const filteredHeartRate = heartData.heartRateData
+        //   .filter(entry => {
+        //     const time = new Date(entry.time);
+        //     console.log("Checking:", entry.time, "Parsed:", time.toISOString());
+        //     return !isNaN(time) && time >= sixHoursAgo && time <= now;
+        //   })
+        //   .sort((a, b) => new Date(a.time) - new Date(b.time));
+        if (heartData.heartRateData && heartData.heartRateData.length > 0) {
+          // Sort and find latest timestamp
+          const sorted = heartData.heartRateData
+            .filter(entry => !isNaN(new Date(entry.time))) // clean invalid dates
+            .sort((a, b) => new Date(a.time) - new Date(b.time));
+        
+          const latestTime = new Date(sorted[sorted.length - 1].time);
+          const sixHoursBefore = new Date(latestTime.getTime() - 8 * 60 * 60 * 1000);
+        
+          console.log("Latest data point:", latestTime.toISOString());
+          console.log("6 hours before:", sixHoursBefore.toISOString());
+        
+          const filteredHeartRate = sorted.filter(entry => {
+            const time = new Date(entry.time);
+            return time >= sixHoursBefore && time <= latestTime;
+          });
+        
+          console.log("Filtered count:", filteredHeartRate.length);
+        
+          setHeartRateData(filteredHeartRate);
+        }
+        
+      
+        console.log("Filtered count:", filteredHeartRate.length);
+      
+        setHeartRateData(filteredHeartRate);
+      }
+      
+      
       setSleepData(sleep.sleepData || []);
     };
     fetchData();

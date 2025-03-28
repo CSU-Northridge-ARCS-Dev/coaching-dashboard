@@ -27,10 +27,10 @@ ChartJS.register(
 
 const HeartGraph = ({ heartRateData }) => {
   // Convert each data point to label (like "03:12") and BPM
-  // const labels = heartRateData.map((entry) => {
-  //   const date = new Date(entry.time);
-  //   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  // });
+  const labels = heartRateData.map((entry) => {
+    const date = new Date(entry.time);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  });
 
   const bpmValues = heartRateData.map((entry) => entry.beatsPerMinute);
 
@@ -55,8 +55,15 @@ const HeartGraph = ({ heartRateData }) => {
       return isValid ? { x: time, y: entry.beatsPerMinute } : null;
     })
     .filter(Boolean) // remove nulls
-    //.sort((a, b) => a.x - b.x); // sort by time
-    .sort((a, b) => a.x - b.x);
+    .sort((a, b) => a.x - b.x); // sort by time
+
+    if (validData.length > 0 && validData[0].x instanceof Date && !isNaN(validData[0].x)) {
+      console.log("Start:", validData[0].x.toISOString());
+      console.log("End:", validData[validData.length - 1].x.toISOString());
+    } else {
+      console.warn("⚠️ No valid heart rate data points to plot.");
+    }
+    
 
 
   const data = {
