@@ -3,6 +3,7 @@ import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
+  TimeScale,
   LinearScale,
   PointElement,
   LineElement,
@@ -10,9 +11,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import "chartjs-adapter-date-fns";
 
 ChartJS.register(
-  CategoryScale,
+  //CategoryScale,
+  TimeScale,
   LinearScale,
   PointElement,
   LineElement,
@@ -24,19 +27,49 @@ ChartJS.register(
 
 const HeartGraph = ({ heartRateData }) => {
   // Convert each data point to label (like "03:12") and BPM
-  const labels = heartRateData.map((entry) => {
-    const date = new Date(entry.time);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  });
+  // const labels = heartRateData.map((entry) => {
+  //   const date = new Date(entry.time);
+  //   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  // });
 
   const bpmValues = heartRateData.map((entry) => entry.beatsPerMinute);
 
+  // const validData = heartRateData
+  //   .filter((entry) => {
+  //     const time = new Date(entry.time).getTime();
+  //     return !isNaN(time) && time < Date.now() + 1000 * 60 * 60; // max 1 hour into future
+  //   })
+  //   .map((entry) => ({
+  //     x: new Date(entry.time),
+  //     y: entry.beatsPerMinute,
+  //   }));
+
+  const validData = heartRateData
+    .map(entry => {
+      const time = new Date(entry.time);
+      const isValid =
+        !isNaN(time.getTime()) &&
+        time.getFullYear() >= 2020 &&
+        time.getFullYear() <= 2030; // avoid 1970 or junk
+
+      return isValid ? { x: time, y: entry.beatsPerMinute } : null;
+    })
+    .filter(Boolean) // remove nulls
+    //.sort((a, b) => a.x - b.x); // sort by time
+    .sort((a, b) => a.x - b.x);
+
+
   const data = {
-    labels,
+    //labels,
     datasets: [
       {
         label: "Heart Rate",
-        data: bpmValues,
+        //data: bpmValues,
+        // data: heartRateData.map((entry) => ({
+        //   x: new Date(entry.time),
+        //   y: entry.beatsPerMinute,
+        // })),
+        data: validData,
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         pointStyle: "circle",
@@ -56,6 +89,21 @@ const HeartGraph = ({ heartRateData }) => {
     },
     scales: {
       x: {
+        type: "time", 
+        // time: {
+        //   unit: "hour",
+        //   tooltipFormat: "HH:mm",
+        //   displayFormats: {
+        //     hour: "HH:mm",
+        //   },
+        // },
+        time: {
+          tooltipFormat: "HH:mm",
+          displayFormats: {
+            hour: "HH:mm",
+            minute: "HH:mm",
+          },
+        },        
         title: {
           display: true,
           text: "Time",

@@ -9,7 +9,6 @@
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
     "lint": "eslint \"src/**/*.{js,jsx}\" --quiet",
-    
     "test": "vitest"
   },
   "keywords": [],
@@ -59,6 +58,7 @@
     "axios": "^1.6.8",
     "bootstrap": "^5.3.1",
     "chart.js": "^4.4.3",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "cors": "^2.8.5",
     "daisyui": "^4.10.1",
     "dotenv": "^16.4.5",

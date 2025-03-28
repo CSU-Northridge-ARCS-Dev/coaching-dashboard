@@ -38,7 +38,17 @@ const HeartPage = () => {
       
       // Check if the data contains heartRateData and it's an array
       if (data.success && Array.isArray(data.heartRateData)) {
-        setHeartRateData(data.heartRateData); // Store the heart rate data in state
+        const now = new Date();
+        const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+        const filteredData = data.heartRateData
+          .filter((entry) => {
+            const entryTime = new Date(entry.time);
+            return entryTime >= last24Hours && entryTime <= now;
+          })
+          .sort((a, b) => new Date(a.time) - new Date(b.time));
+        setHeartRateData(filteredData);
+        //setHeartRateData(data.heartRateData); // Store the heart rate data in state
       } else {
         console.error("Invalid data format:", data);
       }
