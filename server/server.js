@@ -180,14 +180,15 @@ app.get("/getHeartRate", async (req, res) => {
 
 // Player's Sleep Rate Graph
 app.get("/getSleepData", async (req, res) => {
-  const { userId } = req.query; 
-  //const targetDate = "2024-07-03";
-  const targetDate = req.query.date;
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, message: "Missing userId" });
+  }
 
   try {
     const db = admin.firestore();
 
-    //  SleepDataHC subcollection info
     const sleepDataRef = db
       .collection("Users")
       .doc(userId)
@@ -195,44 +196,132 @@ app.get("/getSleepData", async (req, res) => {
 
     const snapshot = await sleepDataRef.get();
 
-    // Check if any sleep data exists 
     if (snapshot.empty) {
-      return res
-        .status(404)
-        .json({ success: false, message: "No sleep data found" });
+      return res.status(404).json({ success: false, message: "No sleep data found" });
     }
 
-    // Sleep Data Collection
-    let sleepData = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      const startDate = new Date(data.startTime).toISOString().split("T")[0];
+    // Gather all valid sleep entries
+    const allSleepData = snapshot.docs
+      .map(doc => doc.data())
+      .filter(entry => entry.startTime && entry.endTime);
 
-      // Only include entries from the target date
-      if (startDate === targetDate) {
-        sleepData.push(data);
-      }
+    if (allSleepData.length === 0) {
+      return res.status(404).json({ success: false, message: "No valid sleep entries" });
+    }
+
+    // Sort by latest endTime
+    allSleepData.sort((a, b) => new Date(b.endTime) - new Date(a.endTime));
+    const latestEnd = new Date(allSleepData[0].endTime);
+    const targetDate = latestEnd.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    // Get all entries from that same night
+    const latestSleepData = allSleepData.filter(entry => {
+      const entryEndDate = new Date(entry.endTime).toISOString().split("T")[0];
+      return entryEndDate === targetDate;
     });
 
-    // If no sleep data found 
-    if (sleepData.length === 0) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "No sleep data found for the target date",
-        });
+    if (latestSleepData.length === 0) {
+      return res.status(404).json({ success: false, message: "No recent sleep session found" });
     }
 
-    // Send the data back as a JSON response
-    res.json({ success: true, sleepData });
+    return res.json({ success: true, sleepData: latestSleepData });
   } catch (error) {
     console.error("Error fetching sleep data:", error);
-    res
-      .status(500)
-      .json({ success: false, message: `Server error: ${error.message}` });
+    return res.status(500).json({ success: false, message: `Server error: ${error.message}` });
   }
 });
+
+// app.get("/getSleepData", async (req, res) => {
+//   const { userId } = req.query; 
+//   //const targetDate = "2024-07-03";
+//   //const targetDate = req.query.date;
+
+//   try {
+//     const db = admin.firestore();
+
+//     //  SleepDataHC subcollection info
+//     const sleepDataRef = db
+//       .collection("Users")
+//       .doc(userId)
+//       .collection("SleepDataHC");
+
+//     const snapshot = await sleepDataRef.get();
+
+//     // Check if any sleep data exists 
+//     if (snapshot.empty) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "No sleep data found" });
+//     }
+
+//     // Sleep Data Collection
+//     let allSleepData = [];
+//     snapshot.forEach((doc) => {
+//       const data = doc.data();
+//       if (data.startTime && data.endTime) {
+//         allSleepData.push(data);
+//       }
+//     });
+
+//     // Sort by endTime descending to get the most recent session
+//     allSleepData.sort((a, b) => new Date(b.endTime) - new Date(a.endTime));
+
+//     if (allSleepData.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No valid sleep data found",
+//       });
+//     }
+
+//     // Get the latest sleep session’s end date
+//     const latestEndDate = new Date(allSleepData[0].endTime).toISOString().split("T")[0];
+
+//     // Filter entries from the same night
+//     const latestSleepData = allSleepData.filter((entry) => {
+//       const entryDate = new Date(entry.endTime).toISOString().split("T")[0];
+//       return entryDate === latestEndDate;
+//     });
+
+//     if (latestSleepData.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No recent sleep session found",
+//       });
+//     }
+
+//     // ✅ Send back the most recent full sleep session
+//     res.json({ success: true, sleepData: latestSleepData });
+
+//     // let sleepData = [];
+//     // snapshot.forEach((doc) => {
+//     //   const data = doc.data();
+//     //   const startDate = new Date(data.startTime).toISOString().split("T")[0];
+
+//     //   // Only include entries from the target date
+//     //   // if (startDate === targetDate) {
+//     //   //   sleepData.push(data);
+//     //   // }
+//     // });
+
+//     // If no sleep data found 
+//     if (sleepData.length === 0) {
+//       return res
+//         .status(404)
+//         .json({
+//           success: false,
+//           message: "No sleep data found for the target date",
+//         });
+//     }
+
+//     // Send the data back as a JSON response
+//     res.json({ success: true, sleepData });
+//   } catch (error) {
+//     console.error("Error fetching sleep data:", error);
+//     res
+//       .status(500)
+//       .json({ success: false, message: `Server error: ${error.message}` });
+//   }
+// });
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

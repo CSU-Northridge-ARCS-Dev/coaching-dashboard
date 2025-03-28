@@ -27,12 +27,12 @@ ChartJS.register(
 
 const HeartGraph = ({ heartRateData }) => {
   // Convert each data point to label (like "03:12") and BPM
-  const labels = heartRateData.map((entry) => {
-    const date = new Date(entry.time);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  });
+  // const labels = heartRateData.map((entry) => {
+  //   const date = new Date(entry.time);
+  //   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  // });
 
-  const bpmValues = heartRateData.map((entry) => entry.beatsPerMinute);
+  // const bpmValues = heartRateData.map((entry) => entry.beatsPerMinute);
 
   // const validData = heartRateData
   //   .filter((entry) => {

@@ -38,9 +38,11 @@ const SleepPage = () => {
         throw new Error("Failed to fetch sleep data");
       }
       const data = await response.json();
+      console.log("📥 Raw sleep data from backend:", data);
 
       if (data.success && Array.isArray(data.sleepData)) {
         const processedData = processSleepData(data.sleepData); // Process the raw sleep data
+        console.log("✅ Processed sleep data:", processedData);
         setSleepData(processedData);
       } else {
         console.error("Invalid sleep data format:", data);
@@ -56,9 +58,11 @@ const SleepPage = () => {
     let coreSleep = 0;
     let remSleep = 0;
     let awake = 0;
+    let unknown = 0;
 
     sleepData.forEach((entry) => {
       const duration = (new Date(entry.endTime) - new Date(entry.startTime)) / 3600000; // Convert ms to hours
+      console.log(`Stage: ${entry.stage}, Duration: ${duration.toFixed(2)} hrs`);
       switch (entry.stage) {
         case 1: // Awake
           awake += duration;
@@ -73,6 +77,8 @@ const SleepPage = () => {
           deepSleep += duration;
           break;
         default:
+          unknown += duration;
+          console.warn(`Unhandled sleep stage: ${entry.stage}`);
           break;
       }
     });
@@ -82,6 +88,7 @@ const SleepPage = () => {
       coreSleep: coreSleep.toFixed(2),
       remSleep: remSleep.toFixed(2),
       awake: awake.toFixed(2),
+      unknown: unknown.toFixed(2),
     };
   };
 

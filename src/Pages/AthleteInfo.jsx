@@ -69,13 +69,45 @@ const AthleteInfo = () => {
         }
         
       
-        console.log("Filtered count:", filteredHeartRate.length);
+        //console.log("Filtered count:", filteredHeartRate.length);
       
-        setHeartRateData(filteredHeartRate);
+        //setHeartRateData(filteredHeartRate);
       }
       
+
+      console.log("Raw sleep data from backend:", sleep);
+      console.log("Sleep data length:", sleep.sleepData?.length);
       
-      setSleepData(sleep.sleepData || []);
+      //setSleepData(sleep.sleepData || []);
+      if (sleep.sleepData && sleep.sleepData.length > 0) {
+        const processSleepData = (entries) => {
+          let deepSleep = 0, coreSleep = 0, remSleep = 0, awake = 0, unknown = 0;
+        
+          entries.forEach(({ stage, startTime, endTime }) => {
+            const duration = (new Date(endTime) - new Date(startTime)) / 3600000;
+            switch (stage) {
+              case 1: awake += duration; break;
+              case 2: remSleep += duration; break;
+              case 3: coreSleep += duration; break;
+              case 4: deepSleep += duration; break;
+              default: unknown += duration; break;
+            }
+          });
+        
+          return {
+            deepSleep: deepSleep.toFixed(2),
+            coreSleep: coreSleep.toFixed(2),
+            remSleep: remSleep.toFixed(2),
+            awake: awake.toFixed(2),
+            unknown: unknown.toFixed(2),
+          };
+        };
+        
+        const processedSleep = processSleepData(sleep.sleepData);
+        console.log("✅ Processed sleep data:", processedSleep);
+        setSleepData(processedSleep);
+      }
+      
     };
     fetchData();
   }, [athlete]);
