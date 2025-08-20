@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -10,8 +10,11 @@ import {
   Title,
   Tooltip,
   Legend,
+  Decimation
 } from "chart.js";
 import "chartjs-adapter-date-fns";
+import HighlightZones from "chartjs-plugin-annotation";
+import ZoomAndPan from "chartjs-plugin-zoom";
 
 ChartJS.register(
   //CategoryScale,
@@ -21,11 +24,17 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  HighlightZones,
+  ZoomAndPan,
+  Decimation
 );
 
 
 const HeartGraph = ({ heartRateData }) => {
+  //const chartReset = useRef(null); //used for resetting chart after zoom/drag
+  const chartReset = useRef(null);
+  const [smooth, setSmooth] = useState(false);
   // Convert each data point to label (like "03:12") and BPM
   // const labels = heartRateData.map((entry) => {
   //   const date = new Date(entry.time);
@@ -52,7 +61,8 @@ const HeartGraph = ({ heartRateData }) => {
         time.getFullYear() >= 2020 &&
         time.getFullYear() <= 2030; // avoid 1970 or junk
 
-      return isValid ? { x: time, y: entry.beatsPerMinute } : null;
+      //return isValid ? { x: time, y: entry.beatsPerMinute } : null;
+      return isValid ? { x: time.getTime(), y: entry.beatsPerMinute } : null; // <-- numeric x
     })
     .filter(Boolean) // remove nulls
     .sort((a, b) => a.x - b.x); // sort by time
@@ -64,7 +74,24 @@ const HeartGraph = ({ heartRateData }) => {
       console.warn("⚠️ No valid heart rate data points to plot.");
     }
     
+  let maxHR = 0;
+  for(let i = 0; i<validData.length; i++){ //finds max hr by traversing dataset
+    if(maxHR < validData[i].y){
+      maxHR = validData[i].y;
+    }
+  }
 
+  // decide how aggressive to decimate
+ const dense = validData.length > 400; // only bother if there's enough data
+ const samples = Math.max(
+   120,                                      // floor
+   Math.min(600, Math.floor(validData.length * 0.35)) // keep ~35%, cap 600
+ );
+//  const dense = validData.length > 20; // only bother if there's enough data
+//  const samples = Math.max(
+//    20,                                      // floor
+//    Math.min(30, Math.floor(validData.length * 0.35)) // keep ~35%, cap 600
+//  );
 
   const data = {
     //labels,
@@ -77,11 +104,35 @@ const HeartGraph = ({ heartRateData }) => {
         //   y: entry.beatsPerMinute,
         // })),
         data: validData,
+        parsing: false,        // <-- let decimator work directly on data
+        normalized: true,      // <-- perf hint for sorted x
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
+        // pointStyle: "circle",
+        // pointRadius: 5,
+        // pointHoverRadius: 10,
+
+        // pointStyle: "circle",
+        // pointRadius: smooth ? 0 : 3,     // ✨ hide points when smoothed
+        // pointHoverRadius: smooth ? 0 : 8,
+        // tension: smooth ? 0.4 : 0.0,
+
         pointStyle: "circle",
-        pointRadius: 5,
-        pointHoverRadius: 10,
+        pointRadius: smooth ? 0 : 3,   // hide dots when smoothed
+        pointHoverRadius: smooth ? 0 : 8,
+        tension: smooth ? 0.35 : 0.0,  // small curve so it “reads” as smooth
+      },
+      {
+        label: "Peak Zone",
+        data: [], //empty, just for legend display
+        borderColor: "rgba(250, 101, 133, 0.7)",
+        backgroundColor: "rgba(250, 101, 133, 0.7)",
+      },
+      {
+        label: "Cardio Zone",
+        data: [], //empty, just for legend display
+        borderColor: "rgba(253, 217, 110, 0.7)",
+        backgroundColor: "rgba(253, 217, 110, 0.7)",
       },
     ],
   };
@@ -93,7 +144,69 @@ const HeartGraph = ({ heartRateData }) => {
         display: true,
         text: "Heart Rate Readings Over Time",
       },
+      decimation: {
+        enabled: smooth && dense,  // only when toggle is ON and worth it
+        algorithm: "lttb",
+        samples,                   // dynamic target
+      },
+      annotation:{
+      annotations:{
+        peakZone:{
+            type:"box",
+            yMin: maxHR * 0.85,
+            yMax: maxHR,
+            backgroundColor: "rgba(250, 101, 133, 0.7)",
+            borderWidth: 0,
+            drawTime: "beforeDatasetsDraw",
+          },
+          cardioZone:{
+            type:"box",
+            yMin: maxHR *0.7,
+            yMax: maxHR * 0.85,
+            backgroundColor: "rgba(253, 217, 110, 0.7)",
+            borderWidth: 0,
+            drawTime: "beforeDatasetsDraw",
+          },
+
+      },
+      
     },
+    tooltip:{
+      callbacks:{
+        title: ()=>null,
+        // label: function dataDisplay(data){
+        //   return `${data.parsed.y} BPM · ${data.label}`;
+        // },
+        label: (ctx) => {
+        const t = new Date(ctx.parsed.x);
+        const hhmm = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return `${ctx.parsed.y} BPM · ${hhmm}`;
+      },
+     },
+    },
+    // decimation: {
+    //     enabled: smooth,           // only when toggle is ON
+    //     algorithm: "lttb",
+    //     samples: 1000,             // ~how many points to keep (tune 600–1500)
+    //   },
+    zoom:{
+        pan:{
+          enabled: true,
+          mode: "x",
+          modifierKey: "ctrl",
+        },
+        zoom:{
+         drag:{
+            enabled:true,
+            modifierKey: "shift",
+         },
+         mode:"x"
+      },
+      },
+     
+
+    },
+    
     scales: {
       x: {
         type: "time", 
@@ -119,21 +232,64 @@ const HeartGraph = ({ heartRateData }) => {
         grid: { color: "#ffffff" },
         ticks: { color: "#ffffff", maxRotation: 90, minRotation: 45 },
       },
-      y: {
-        title: {
-          display: true,
-          text: "Heart Rate (BPM)",
-          color: "#ffffff",
-        },
-        min: 0,
-        max: 150,
-        grid: { color: "#ffffff" },
-        ticks: { color: "#ffffff" },
-      },
+      // y: {
+      //   title: {
+      //     display: true,
+      //     text: "Heart Rate (BPM)",
+      //     color: "#ffffff",
+      //   },
+      //   min: 0,
+      //   max: maxHR,
+      //   grid: { color: "#ffffff" },
+      //   ticks: { color: "#ffffff" },
+      // },
+      y: { 
+        title: { 
+          display: true, 
+          text: "Heart Rate (BPM)", 
+          color: "#fff" },
+          min: 0, 
+          max: maxHR, 
+          grid: { color: "#fff" }, 
+          ticks: { color: "#fff" } },
     },
   };
+   const resetZoom =()=>{
+    chartReset.current?.resetZoom();
+  }
+  useEffect(()=>{
+    const handleKey = (e) =>{
+      if(e.key==="Escape"){
+        resetZoom();
+     }
+    };
+    window.addEventListener("keydown", handleKey);
+    return()=> window.removeEventListener("keydown", handleKey);
+  }, []);
+ 
+  return (
+  <>
+  {/* <div style={{textAlign:"right", marginBottom:"-20px"}}>
+    <button onClick={resetZoom} style={{backgroundColor: "rgba(75, 75, 75, 0.5)", padding: "5px", cursor: "pointer",}}> Reset Zoom </button>
+  </div> */}
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"-20px" }}>
+        <span style={{ opacity: 0.8, fontSize: 12 }}>Zones: estimated</span>
+        <div style={{ display:"flex", gap:8 }}>
+          <button onClick={() => setSmooth(s => !s)}
+                  style={{backgroundColor:"rgba(75,75,75,0.5)", padding:"5px 8px", cursor:"pointer"}}>
+            {smooth ? "Smooth: ON" : "Smooth: OFF"}
+          </button>
+          <button onClick={resetZoom}
+                  style={{backgroundColor:"rgba(75,75,75,0.5)", padding:"5px 8px", cursor:"pointer"}}>
+            Reset Zoom
+          </button>
+        </div>
+      </div>
+    {/* <Line ref={chartReset} data={data} options={options} /> */}
+    <Line key={smooth ? "smooth" : "raw"} ref={chartReset} data={data} options={options} />
+  </>
+);
 
-  return <Line data={data} options={options} />;
 };
 
 
