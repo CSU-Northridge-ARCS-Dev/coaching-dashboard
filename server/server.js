@@ -177,6 +177,58 @@ app.get("/getHeartRate", async (req, res) => {
       .json({ success: false, message: `Server error: ${error.message}` });
   }
 });
+app.get("/getVO2MaxData", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, message: "Missing userId" });
+  }
+
+  try {
+    const db = admin.firestore();
+    const vo2Ref = db.collection("Users").doc(userId).collection("VO2MaxDataHX");
+    const snapshot = await vo2Ref.get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ success: false, message: "No VO₂ max data found" });
+    }
+
+    const vo2Data = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      let timestamp = null;
+
+      if (data.timestamp instanceof admin.firestore.Timestamp) {
+        timestamp = data.timestamp.toDate();
+      } else if (typeof data.timestamp === "number") {
+        timestamp = new Date(data.timestamp);
+      } else if (data.timestamp?._seconds) {
+        timestamp = new Date(data.timestamp._seconds * 1000);
+      } else if (typeof data.timestamp === "string") {
+        timestamp = new Date(data.timestamp);
+      }
+
+      if (data.value && timestamp && !isNaN(timestamp.getTime())) {
+        vo2Data.push({
+          x: timestamp,
+          y: data.value,
+        });
+      }
+    });
+
+    vo2Data.sort((a, b) => a.x - b.x);
+
+    return res.json({ success: true, data: vo2Data });
+  } catch (error) {
+    console.error("Error fetching VO₂ max data:", error);
+    return res.status(500).json({
+      success: false,
+      message: `Server error: ${error.message}`,
+    });
+  }
+});
+
 
 // Player's Sleep Rate Graph
 app.get("/getSleepData", async (req, res) => {
