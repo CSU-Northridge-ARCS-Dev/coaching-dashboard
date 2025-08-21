@@ -6,6 +6,7 @@ import Navbar from "../Components/Navbar";
 import HeartGraph from "../Components/HeartGraph";
 import ActivityRing from "../Components/ActivityRing";
 import SleepGraph from "../Components/SleepGraph";
+import VO2MaxChart from "../Components/V02MaxChart";
 
 const AthleteInfo = () => {
   const [user] = useAuthState(getAuth());
@@ -121,9 +122,21 @@ const AthleteInfo = () => {
         </div>
 
         <div className="tw-grid tw-grid-cols-1 tw-gap-4">
+          <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[580px] tw-flex tw-flex-col">
+  <div className="tw-flex-grow">
+    <VO2MaxChart userId={athlete?.id} />
+  </div>
+  {/* <div className="tw-overflow-auto tw-text-white tw-mt-2 tw-text-sm">
+    <p>Brush-zoom: Shift + drag</p>
+    <p>Wheel zoom: Ctrl + scroll</p>
+    <p>Series Toggle: Click legend</p>
+  </div> */}
+</div>
+
           <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
             <HeartGraph heartRateData={heartRateData} />
           </div>
+
           <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
             <SleepGraph sleepData={sleepData} />
           </div>
