@@ -10,6 +10,7 @@ import {
   faBed,
   faUser,
   faEnvelope,
+  faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
@@ -38,8 +39,10 @@ const Navbar = () => {
     await signOut(auth);
   };
 
-  const displayName = user ? user.displayName : "";
-  const [firstName, lastName] = displayName ? displayName.split(" ") : ["", ""];
+  const displayName = user ? user.displayName || "" : "";
+  const nameParts = displayName.trim().split(" ");
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ") || "";
 
   const getDashboardPath = () => {
     switch (role) {
@@ -54,50 +57,56 @@ const Navbar = () => {
     }
   };
 
+  // active route helpers (handles nested paths too)
+  const onDashboard = ["/admin", "/athlete", "/coach"].some((p) =>
+    location.pathname.startsWith(p)
+  );
+  const onHeart = location.pathname.startsWith("/heart");
+  const onSleep = location.pathname.startsWith("/sleep");
+  const onInfo = location.pathname.startsWith("/info");
+  const onInsights = location.pathname.startsWith("/insights");
+  const onInvitation = location.pathname.startsWith("/invitation");
+
+  const baseLink =
+    "tw-flex tw-items-center tw-space-x-2 tw-px-4 tw-py-2 tw-text-[var(--text)] hover:tw-bg-[var(--sidebar-hover)]";
+  const activeLink =
+    "tw-bg-[var(--sidebar-active)] tw-text-[var(--accent)]";
+
+  const iconClass = (active) =>
+    active ? "tw-text-[var(--accent)]" : "tw-text-[var(--muted-text)]";
+
   return (
-    <div className="tw-fixed tw-top-0 tw-left-0 tw-w-64 tw-h-full tw-bg-[#1F2A40] tw-shadow-lg tw-flex tw-flex-col tw-items-center tw-pt-10">
-      <div className="tw-text-white tw-text-2xl tw-font-bold tw-mb-2">
+    <div className="tw-fixed tw-top-0 tw-left-0 tw-w-64 tw-h-full tw-bg-[var(--sidebar-bg)] tw-border-r tw-border-[var(--border)] tw-flex tw-flex-col tw-items-center tw-pt-10">
+      <div className="tw-text-[var(--text)] tw-text-2xl tw-font-bold tw-mb-1">
         {firstName} {lastName}
       </div>
-      <div className="tw-text-white tw-text-lg tw-mb-6">{role}</div>
+      <div className="tw-text-[var(--muted-text)] tw-text-sm tw-uppercase tw-tracking-wide tw-mb-6">
+        {role}
+      </div>
+
       <nav className="tw-flex-1 tw-w-full">
-        <ul className="tw-flex tw-flex-col tw-space-y-6">
+        <ul className="tw-flex tw-flex-col tw-space-y-2">
           <li>
             <Link
               to={getDashboardPath()}
-              className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
-                ["/admin", "/athlete", "/coach"].includes(location.pathname)
-                  ? "tw-text-red-500"
-                  : ""
-              }`}
+              className={`${baseLink} ${onDashboard ? activeLink : ""}`}
             >
-              <FontAwesomeIcon icon={faTachometerAlt} />
-              <span
-                className={`${
-                  ["/admin", "/athlete", "/coach"].includes(location.pathname)
-                    ? "tw-text-red-500"
-                    : ""
-                }`}
-              >
+              <FontAwesomeIcon icon={faTachometerAlt} className={iconClass(onDashboard)} />
+              <span className={onDashboard ? "tw-text-[var(--accent)]" : ""}>
                 Dashboard
               </span>
             </Link>
           </li>
+
           {role === "athlete" && (
             <>
               <li>
                 <Link
                   to="/heart"
-                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
-                    location.pathname === "/heart" ? "tw-text-red-500" : ""
-                  }`}
+                  className={`${baseLink} ${onHeart ? activeLink : ""}`}
                 >
-                  <FontAwesomeIcon icon={faHeartbeat} />
-                  <span
-                    className={`${
-                      location.pathname === "/heart" ? "tw-text-red-500" : ""
-                    }`}
-                  >
+                  <FontAwesomeIcon icon={faHeartbeat} className={iconClass(onHeart)} />
+                  <span className={onHeart ? "tw-text-[var(--accent)]" : ""}>
                     Heart Data
                   </span>
                 </Link>
@@ -105,66 +114,72 @@ const Navbar = () => {
               <li>
                 <Link
                   to="/sleep"
-                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
-                    location.pathname === "/sleep" ? "tw-text-red-500" : ""
-                  }`}
+                  className={`${baseLink} ${onSleep ? activeLink : ""}`}
                 >
-                  <FontAwesomeIcon icon={faBed} />
-                  <span
-                    className={`${
-                      location.pathname === "/sleep" ? "tw-text-red-500" : ""
-                    }`}
-                  >
+                  <FontAwesomeIcon icon={faBed} className={iconClass(onSleep)} />
+                  <span className={onSleep ? "tw-text-[var(--accent)]" : ""}>
                     Sleep Data
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/insights"
+                  className={`${baseLink} ${onInsights ? activeLink : ""}`}
+                >
+                  <FontAwesomeIcon icon={faChartLine} className={iconClass(onInsights)} />
+                  <span className={onInsights ? "tw-text-[var(--accent)]" : ""}>
+                    Insights
                   </span>
                 </Link>
               </li>
             </>
           )}
+
           {role === "coach" && (
             <>
               <li>
                 <Link
                   to="/info"
-                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
-                    location.pathname === "/info" ? "tw-text-red-500" : ""
-                  }`}
+                  className={`${baseLink} ${onInfo ? activeLink : ""}`}
                 >
-                  <FontAwesomeIcon icon={faUser} />
-                  <span
-                    className={`${
-                      location.pathname === "/info" ? "tw-text-red-500" : ""
-                    }`}
-                  >
+                  <FontAwesomeIcon icon={faUser} className={iconClass(onInfo)} />
+                  <span className={onInfo ? "tw-text-[var(--accent)]" : ""}>
                     Athlete Info
                   </span>
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/invitation"
-                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
-                    location.pathname === "/invitation" ? "tw-text-red-500" : ""
-                  }`}
+                  to="/insights"
+                  className={`${baseLink} ${onInsights ? activeLink : ""}`}
                 >
-                  <FontAwesomeIcon icon={faEnvelope} />
-                  <span
-                    className={`${
-                      location.pathname === "/invitation" ? "tw-text-red-500" : ""
-                    }`}
-                  >
+                  <FontAwesomeIcon icon={faChartLine} className={iconClass(onInsights)} />
+                  <span className={onInsights ? "tw-text-[var(--accent)]" : ""}>
+                    Insights
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/invitation"
+                  className={`${baseLink} ${onInvitation ? activeLink : ""}`}
+                >
+                  <FontAwesomeIcon icon={faEnvelope} className={iconClass(onInvitation)} />
+                  <span className={onInvitation ? "tw-text-[var(--accent)]" : ""}>
                     Invite
                   </span>
                 </Link>
               </li>
             </>
           )}
-          <li>
+
+          <li className="tw-mt-2">
             <button
               onClick={handleLogout}
-              className="tw-flex tw-items-center tw-space-x-2 tw-w-full tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D]"
+              className={`${baseLink} tw-w-full`}
             >
-              <FontAwesomeIcon icon={faSignOutAlt} />
+              <FontAwesomeIcon icon={faSignOutAlt} className="tw-text-[var(--muted-text)]" />
               <span>Logout</span>
             </button>
           </li>

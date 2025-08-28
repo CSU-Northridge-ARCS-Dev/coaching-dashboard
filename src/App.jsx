@@ -14,6 +14,7 @@ import AthleteInfo from "./Pages/AthleteInfo";
 import HeartPage from "./Pages/HeartPage";
 import SleepPage from "./Pages/SleepPage";
 import Invitation from "./Pages/Invitation";
+import PlayerInsights from "./Pages/PlayerInsights";
 import "./style.css";
 
 
@@ -79,7 +80,11 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-        </Routes>
+          <Route 
+            path="/insights" 
+            element={
+            <PlayerInsights />} />
+          </Routes>
       </PermissionProvider>
     </BrowserRouter>
   );

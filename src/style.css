@@ -2,17 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-@media (max-width: 768px) {
-    .tw-flex.tw-justify-between {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-  }
+/* === ARCS poster theme (used by Navbar and pages) === */
+:root{
+  --page-bg:#F6FAFF;
+  --header-bg:#FFFFFF;
+  --sidebar-bg:#E9F2FF;
+  --sidebar-hover:#D7E8FF;
+  --sidebar-active:#CDE2FF;
 
-  @media (max-width: 768px) {
-    .tw-pr-32 {
-      padding-right: 6.5rem; 
-      padding-top: 1rem;
-    }
+  --card-bg:#FFFFFF;
+  --card-subtle:#F2F7FF;
+
+  --text:#0D2B45;           /* deep navy for text */
+  --muted-text:#4F6B8A;
+  --border:#E2EAF4;
+
+  --accent:#12B9CC;         /* teal from the poster */
+  --accent-600:#0FA2B3;
+  --accent-soft:#E5F9FC;
+  --highlight:#FFD84D;      /* yellow pop if you need it */
+}
+
+/* Apply the theme globally */
+@layer base{
+  html, body, #root {
+    background-color: var(--page-bg);
+    color: var(--text);
   }
+}
+
+/* Optional helpers so you don't fight Tailwind utilities */
+@layer utilities{
+  .card-surface{
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+  }
+  .muted { color: var(--muted-text); }
+  .accent { color: var(--accent); }
+}
+
+/* Your responsive tweaks (avoid overriding Tailwind utilities like .tw-pr-32) */
+@media (max-width: 768px){
+  /* Use a custom class instead of .tw-flex.tw-justify-between */
+  .stack-on-mobile{
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  /* Use this instead of redefining .tw-pr-32 globally */
+  .pr-fix{
+    padding-right: 6.5rem;
+    padding-top: 1rem;
+  }
+}
