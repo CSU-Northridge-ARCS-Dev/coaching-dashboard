@@ -205,7 +205,16 @@ export default function PlayerInsights() {
   }
 
   // most recent night → events
-  const chosenNight = ah.sleepNights.at(-1);
+//   const chosenNight = ah.sleepNights.at(-1);
+
+  // 🔎 Year filters you asked for
+  const rhrDaily2024   = ah.rhrDailyPoints.filter(p => new Date(p.time).getUTCFullYear() === 2024);
+  const vo2Weekly2024  = ah.vo2PointsWeekly.filter(p => new Date(p.x).getUTCFullYear() === 2024);
+  const nights2025     = ah.sleepNights.filter(n => new Date(`${n.night}T00:00:00Z`).getUTCFullYear() === 2025);
+
+  // most recent 2025 night → events (fallback to latest if none)
+  const chosenNight = (nights2025.length ? nights2025 : ah.sleepNights).at(-1);
+
   const timelineEvents = synthesizeEpochsFromNight(chosenNight);
 
   // Console audit + UI badge data
@@ -259,7 +268,8 @@ export default function PlayerInsights() {
             <span className={sectionHeader}>Resting Heart Rate (daily)</span>
           </div>
           <div className="tw-flex-1 tw-min-h-0">
-            <HeartGraph heartRateData={ah.rhrDailyPoints} />
+            {/* <HeartGraph heartRateData={ah.rhrDailyPoints} /> */}
+            <HeartGraph heartRateData={rhrDaily2024} />
           </div>
         </div>
 
@@ -270,7 +280,8 @@ export default function PlayerInsights() {
               <span className={sectionHeader}>VO₂ Max (weekly latest)</span>
             </div>
             <div className="tw-flex-1 tw-min-h-0">
-              <VO2MaxChart csvData={ah.vo2PointsWeekly} userId={athlete?.id} />
+              {/* <VO2MaxChart csvData={ah.vo2PointsWeekly} userId={athlete?.id} /> */}
+                <VO2MaxChart csvData={vo2Weekly2024} userId={athlete?.id} />
             </div>
           </div>
 
