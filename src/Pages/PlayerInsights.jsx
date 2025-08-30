@@ -208,14 +208,18 @@ export default function PlayerInsights() {
 //   const chosenNight = ah.sleepNights.at(-1);
 
   // 🔎 Year filters you asked for
-  const rhrDaily2024   = ah.rhrDailyPoints.filter(p => new Date(p.time).getUTCFullYear() === 2024);
-  const vo2Weekly2024  = ah.vo2PointsWeekly.filter(p => new Date(p.x).getUTCFullYear() === 2024);
-  const nights2025     = ah.sleepNights.filter(n => new Date(`${n.night}T00:00:00Z`).getUTCFullYear() === 2025);
+//   const rhrDaily2024   = ah.rhrDailyPoints.filter(p => new Date(p.time).getUTCFullYear() === 2024);
+//   const vo2Weekly2024  = ah.vo2PointsWeekly.filter(p => new Date(p.x).getUTCFullYear() === 2024);
+//   const nights2025     = ah.sleepNights.filter(n => new Date(`${n.night}T00:00:00Z`).getUTCFullYear() === 2025);
+//   // most recent 2025 night → events (fallback to latest if none)
+//   const chosenNight = (nights2025.length ? nights2025 : ah.sleepNights).at(-1);
+const rhrDaily2024  = ah.rhrDailyPoints.filter(p => new Date(p.time).getUTCFullYear() === 2024);
+const vo2Weekly2024 = ah.vo2PointsWeekly.filter(p => new Date(p.x).getUTCFullYear() === 2024);
+const nights2024    = ah.sleepNights.filter(n => new Date(`${n.night}T00:00:00Z`).getUTCFullYear() === 2024);
+const chosenNight   = (nights2024.length ? nights2024 : ah.sleepNights).at(-1);
 
-  // most recent 2025 night → events (fallback to latest if none)
-  const chosenNight = (nights2025.length ? nights2025 : ah.sleepNights).at(-1);
 
-  const timelineEvents = synthesizeEpochsFromNight(chosenNight);
+const timelineEvents = synthesizeEpochsFromNight(chosenNight);
 
   // Console audit + UI badge data
   const audit = chosenNight && timelineEvents.length
