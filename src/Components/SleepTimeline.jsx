@@ -51,66 +51,68 @@ export default function SleepTimeline() {
   const total = Object.values(stageDurations).reduce((a, b) => a + b, 0);
 
   return (
-    <div style={{ background: '#0f0f0f', padding: 20, borderRadius: 10, color: 'white' }}>
+    <div
+      style={{
+        background: '#0f0f0f',
+        padding: 20,
+        borderRadius: 10,
+        color: 'white',
+        height: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',            // ✅ make vertical layout
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <h2 style={{ margin: 0, marginBottom: 8 }}>Sleep Stages</h2>
+
       <div style={{ display: 'flex', gap: 20, marginBottom: 10, flexWrap: 'wrap' }}>
-        {[1,2,3,4].map(code => {
-          const min = stageDurations[code] || 0;
-          const pct = total ? Math.round((min / total) * 100) : 0;
-          return (
-            <div key={code} style={{ color: stageMap[code].color }}>
-              <strong>{stageMap[code].label}</strong><br />
-              {pct}% · {Math.floor(min / 60)}h {min % 60}m
-            </div>
-          );
-        })}
+        {/* ...summary blocks... */}
       </div>
 
-      <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          {/* Gradient flipped (Awake at TOP, Deep at BOTTOM) */}
-          <defs>
-            {/* y1=1 -> bottom; y2=0 -> top */}
-            <linearGradient id="sleepGradient" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%"   stopColor={stageMap[1].color} />  {/* Deep (bottom) */}
-              <stop offset="33%"  stopColor={stageMap[2].color} />  {/* Light */}
-              <stop offset="66%"  stopColor={stageMap[3].color} />  {/* REM */}
-              <stop offset="100%" stopColor={stageMap[4].color} />  {/* Awake (top) */}
-            </linearGradient>
-          </defs>
+      {/* ✅ chart gets the remaining space */}
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            margin={{ top: 10, right: 30, left: 10, bottom: 28 }}  // ✅ space for X-axis
+          >
+            <defs>
+              <linearGradient id="sleepGradient" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%"   stopColor={stageMap[1].color} />
+                <stop offset="33%"  stopColor={stageMap[2].color} />
+                <stop offset="66%"  stopColor={stageMap[3].color} />
+                <stop offset="100%" stopColor={stageMap[4].color} />
+              </linearGradient>
+            </defs>
 
-          {/* X = time (left->right) */}
-          <XAxis
-            dataKey="time"
-            type="number"
-            domain={['dataMin', 'dataMax']}
-            tickFormatter={t => moment(t).format('h:mm a')}
-            tick={{ fill: 'white' }}
-          />
-
-          {/* Y = stage labels, top=Awake, bottom=Deep; no decimals */}
-          <YAxis
-            type="number"
-            domain={[1, 4]}               // 1 (Deep) bottom → 4 (Awake) top
-            ticks={[1, 2, 3, 4]}
-            tickFormatter={(v) => stageMap[v]?.label ?? v}
-            tick={{ fill: 'white' }}
-          />
-
-          <Tooltip content={<CustomTooltip />} />
-
-          {/* Curvy line with gradient color */}
-          <Line
-            type="monotone"
-            dataKey="stage"
-            stroke="url(#sleepGradient)"
-            strokeWidth={4}
-            strokeLinecap="round"
-            dot={false}
-            isAnimationActive={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+            <XAxis
+              dataKey="time"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              tickFormatter={t => moment(t).format('h:mm a')}
+              tick={{ fill: 'white' }}
+            />
+            <YAxis
+              type="number"
+              domain={[1, 4]}
+              ticks={[1, 2, 3, 4]}
+              tickFormatter={(v) => stageMap[v]?.label ?? v}
+              tick={{ fill: 'white' }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Line
+              type="monotone"
+              dataKey="stage"
+              stroke="url(#sleepGradient)"
+              strokeWidth={4}
+              strokeLinecap="round"
+              dot={false}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
