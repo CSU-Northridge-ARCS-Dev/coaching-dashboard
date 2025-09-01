@@ -7,6 +7,7 @@ import HeartGraph from "../Components/HeartGraph";
 import ActivityRing from "../Components/ActivityRing";
 import SleepGraph from "../Components/SleepGraph";
 import VO2MaxChart from "../Components/V02MaxChart";
+import SleepTimeline from "../Components/SleepTimeline";
 
 const AthleteInfo = () => {
   const [user] = useAuthState(getAuth());
@@ -131,7 +132,7 @@ const AthleteInfo = () => {
             </div>
           </div>
           <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
-            <SleepGraph sleepData={sleepData} />
+            <SleepTimeline />
           </div>
         </div>
 
