@@ -11,8 +11,6 @@ import Admin from "./Pages/Admin";
 import AthleteDashboard from "./Pages/AthleteDashboard";
 import CoachDashboard from "./Pages/CoachDashboard";
 import AthleteInfo from "./Pages/AthleteInfo";
-import HeartPage from "./Pages/HeartPage";
-import SleepPage from "./Pages/SleepPage";
 import Invitation from "./Pages/Invitation";
 import "./style.css";
 
@@ -44,22 +42,6 @@ const App = () => {
             element={
               <ProtectedRoute requiredRole="coach">
                 <CoachDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/heart"
-            element={
-              <ProtectedRoute requiredRole="athlete">
-                <HeartPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/sleep"
-            element={
-              <ProtectedRoute requiredRole="athlete">
-                <SleepPage />
               </ProtectedRoute>
             }
           />
