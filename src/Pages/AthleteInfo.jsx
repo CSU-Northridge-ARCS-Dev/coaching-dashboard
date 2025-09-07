@@ -5,7 +5,6 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Navbar from "../Components/Navbar";
 import HeartGraph from "../Components/HeartGraph";
 import ActivityRing from "../Components/ActivityRing";
-import SleepGraph from "../Components/SleepGraph";
 import VO2MaxChart from "../Components/V02MaxChart";
 import SleepTimeline from "../Components/SleepTimeline";
 
