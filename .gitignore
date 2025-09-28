@@ -13,3 +13,7 @@ firebas.json
 # Ignore Firebase service account key
 server/firebase-service-account.json
 server/firebase-service-account-prototype.json
+# Local env secrets (do not commit)
+src/.env.local
+.env.local
+.env.*.local
