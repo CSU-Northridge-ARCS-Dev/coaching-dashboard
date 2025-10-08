@@ -89,7 +89,7 @@ export default function PopupCalendar() {
   );
 
   const [selectedDates, setSelectedDates] = useState(new Set());
-  const [activeRange, setActiveRange] = useState("Last 90 days");
+  const [activeRange, setActiveRange] = useState(null);
 
   // When range changes, update selected dates accordingly
   useEffect(() => {

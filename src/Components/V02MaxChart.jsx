@@ -13,6 +13,7 @@ import {
   Filler,
 } from "chart.js";
 import zoomPlugin from "chartjs-plugin-zoom";
+import PopupCalendar from "./DatePicker/PopupCalendar";
 
 ChartJS.register(
   CategoryScale,
@@ -69,6 +70,8 @@ const zoneBackgroundPlugin = {
 const V02MaxChart = ({ userId }) => {
   const chartRef = useRef();
   const [zoneEnabled, setZoneEnabled] = useState(true);
+  const [showCal, setShowCal] = useState(false);
+
   const [labels, setLabels] = useState([]);
   const [values, setValues] = useState([]);
   const [rawData, setRawData] = useState([]);
@@ -283,11 +286,18 @@ const V02MaxChart = ({ userId }) => {
         height: "400px",
         width: "100%",
         boxSizing: "border-box",
+        position: "relative" // so the popup can anchor here
       }}
     >
-      <div style={{ marginBottom: "8px", color: "#ffffff", fontSize: "14px" }}>
+      <div style={{ marginBottom: "8px", color: "#ffffff", fontSize: "14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <strong>Latest VO₂ Max:</strong> {latestValue} ml/kg/min (
         {getZoneLabel(latestValue)})
+        <button
+          onClick={() => setShowCal(true)}
+          style={{ border: "1px solid #555", background: "transparent", color: "#fff", borderRadius: 18, padding: "4px 10px", cursor: "pointer" }}
+        >
+          🗓️ Range
+        </button>
       </div>
 
       <Line
@@ -296,6 +306,25 @@ const V02MaxChart = ({ userId }) => {
         options={options}
         plugins={[zoneBackgroundPlugin]}
       />
+
+      {/* super-light overlay that just shows the PopupCalendar and closes on click */}
+      {showCal && (
+        <div
+          onClick={() => setShowCal(false)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0,0,0,0.35)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50
+          }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,.4)" }}>
+            <PopupCalendar />
+          </div>
+        </div>
+      )}
 
       <div style={{ textAlign: "center", marginTop: "20px" }}>
         <p style={{ color: "#4bd0cb", fontSize: "20px", fontWeight: "700" }}>
