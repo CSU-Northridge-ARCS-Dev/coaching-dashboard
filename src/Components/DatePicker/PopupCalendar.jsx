@@ -1,30 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-const ranges = [
+const RANGES = [
   "Yesterday",
   "Last 7 days",
   "Last 30 days",
   "Last month",
   "Last 60 days",
   "Last 90 days",
-  "UTC"
+  "UTC",
 ];
 
-// Helper to get days in month
+// ---------- helpers ----------
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-// Create a matrix for calendar dates of the month
+// Create a 6x7 matrix for the given month
 function getCalendarMatrix(year, month) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = getDaysInMonth(year, month);
   const weeks = [];
   let currentDay = 1 - firstDay;
 
-  for (let i = 0; i < 6; i++) { // max 6 weeks in month view
+  for (let i = 0; i < 6; i++) {
     const week = [];
     for (let j = 0; j < 7; j++) {
       if (currentDay < 1 || currentDay > daysInMonth) {
@@ -39,8 +38,28 @@ function getCalendarMatrix(year, month) {
   return weeks;
 }
 
+const toDateStrUTC = (d) => {
+  // Normalize to UTC date string YYYY-MM-DD (no mutation of original Date)
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+const fromDateStrUTC = (str) => new Date(`${str}T00:00:00Z`);
+
+function buildRangeSet(startDate, endDate) {
+  const s = new Set();
+  const start = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
+  const end = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
+  for (let d = start; d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    s.add(toDateStrUTC(d));
+  }
+  return s;
+}
+
+// ---------- sub calendar ----------
 function Calendar({ year, month, selectedDates, onDateClick }) {
-  const weeks = getCalendarMatrix(year, month);
+  const weeks = useMemo(() => getCalendarMatrix(year, month), [year, month]);
 
   return (
     <div className="calendar">
@@ -51,20 +70,22 @@ function Calendar({ year, month, selectedDates, onDateClick }) {
       </div>
       <div className="weekdays">
         {WEEKDAYS.map((wd) => (
-          <div key={wd} className="weekday">{wd}</div>
+          <div key={wd} className="weekday">
+            {wd}
+          </div>
         ))}
       </div>
       <div className="days">
         {weeks.map((week, i) =>
           week.map((day, idx) => {
             if (day === null) {
-              return <div key={`${i}-${idx}`} className="day empty"></div>;
+              return <div key={`${i}-${idx}`} className="day empty" />;
             }
-            const dateStr = `${year}-${(month + 1).toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             const isSelected = selectedDates.has(dateStr);
             return (
               <div
-                key={`${i}-${idx}`}
+                key={dateStr}
                 className={`day${isSelected ? " selected" : ""}`}
                 onClick={() => onDateClick(dateStr)}
               >
@@ -78,106 +99,130 @@ function Calendar({ year, month, selectedDates, onDateClick }) {
   );
 }
 
-export default function PopupCalendar() {
-  const today = new Date();
-  const [leftMonth, setLeftMonth] = useState(today.getMonth());
-  const [leftYear, setLeftYear] = useState(today.getFullYear());
-  // Right month is always next month
-  const [rightMonth, setRightMonth] = useState((today.getMonth() + 1) % 12);
+// ---------- main popup calendar ----------
+export default function PopupCalendar({ onClose, onChange }) {
+  const today = useMemo(() => {
+    const t = new Date();
+    return new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()));
+  }, []);
+
+  // Left month starts at "today", right is next month
+  const [leftMonth, setLeftMonth] = useState(today.getUTCMonth());
+  const [leftYear, setLeftYear] = useState(today.getUTCFullYear());
+  const [rightMonth, setRightMonth] = useState((today.getUTCMonth() + 1) % 12);
   const [rightYear, setRightYear] = useState(
-    today.getMonth() === 11 ? today.getFullYear() + 1 : today.getFullYear()
+    today.getUTCMonth() === 11 ? today.getUTCFullYear() + 1 : today.getUTCFullYear()
   );
 
-  const [selectedDates, setSelectedDates] = useState(new Set());
-  const [activeRange, setActiveRange] = useState(null);
+  // Selection state
+  const [selectedDates, setSelectedDates] = useState(() => new Set());
+  const [activeRange, setActiveRange] = useState(null); // start with no preset
+  const [anchorDate, setAnchorDate] = useState(null); // first click (YYYY-MM-DD)
 
-  // When range changes, update selected dates accordingly
+  // Apply preset ranges when activeRange changes
   useEffect(() => {
-    let startDate, endDate;
-    const now = new Date();
+    if (!activeRange) return;
+
+    const now = new Date(); // local clock, but we convert via UTC strings
+    const end = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+    let start = null;
 
     switch (activeRange) {
-      case "Yesterday":
-        endDate = new Date(now);
-        endDate.setDate(now.getDate() - 1);
-        startDate = new Date(endDate);
+      case "Yesterday": {
+        start = new Date(end);
         break;
-      case "Last 7 days":
-        endDate = new Date(now);
-        endDate.setDate(now.getDate() - 1);
-        startDate = new Date(endDate);
-        startDate.setDate(endDate.getDate() - 6);
+      }
+      case "Last 7 days": {
+        start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() - 6));
         break;
-      case "Last 30 days":
-        endDate = new Date(now);
-        endDate.setDate(now.getDate() - 1);
-        startDate = new Date(endDate);
-        startDate.setDate(endDate.getDate() - 29);
+      }
+      case "Last 30 days": {
+        start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() - 29));
         break;
-      case "Last month":
-        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        startDate = lastMonth;
-        endDate = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
+      }
+      case "Last month": {
+        const lmFirst = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1, 1));
+        const lmLast = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 0));
+        start = lmFirst;
+        // override end to last month’s end
+        const set = buildRangeSet(start, lmLast);
+        setSelectedDates(set);
+        // snap visible months to start
+        setLeftYear(lmFirst.getUTCFullYear());
+        setLeftMonth(lmFirst.getUTCMonth());
+        const rm = (lmFirst.getUTCMonth() + 1) % 12;
+        setRightMonth(rm);
+        setRightYear(rm === 0 ? lmFirst.getUTCFullYear() + 1 : lmFirst.getUTCFullYear());
+        setAnchorDate(null);
+        return;
+      }
+      case "Last 60 days": {
+        start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() - 59));
         break;
-      case "Last 60 days":
-        endDate = new Date(now);
-        endDate.setDate(now.getDate() - 1);
-        startDate = new Date(endDate);
-        startDate.setDate(endDate.getDate() - 59);
+      }
+      case "Last 90 days": {
+        start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() - 89));
         break;
-      case "Last 90 days":
-        endDate = new Date(now);
-        endDate.setDate(now.getDate() - 1);
-        startDate = new Date(endDate);
-        startDate.setDate(endDate.getDate() - 89);
-        break;
-      case "UTC":
-        // Maybe select all dates or clear selection, here clearing
-        startDate = null;
-        endDate = null;
-        break;
-      default:
-        startDate = null;
-        endDate = null;
+      }
+      case "UTC": {
+        // clear selection
+        setSelectedDates(new Set());
+        setAnchorDate(null);
+        return;
+      }
+      default: {
+        setSelectedDates(new Set());
+        setAnchorDate(null);
+        return;
+      }
     }
 
-    if (startDate && endDate) {
-      // build range dates set
-      const datesSet = new Set();
-      let curr = new Date(startDate);
-      while (curr <= endDate) {
-        const dateStr = `${curr.getFullYear()}-${(curr.getMonth() + 1)
-          .toString()
-          .padStart(2, "0")}-${curr.getDate().toString().padStart(2, "0")}`;
-        datesSet.add(dateStr);
-        curr.setDate(curr.getDate() + 1);
-      }
-      setSelectedDates(datesSet);
-
-      // adjust months shown
-      setLeftYear(startDate.getFullYear());
-      setLeftMonth(startDate.getMonth());
-      const rightMonthTemp = (startDate.getMonth() + 1) % 12;
-      setRightMonth(rightMonthTemp);
-      setRightYear(rightMonthTemp === 0 ? startDate.getFullYear() + 1 : startDate.getFullYear());
-    } else {
-      setSelectedDates(new Set());
+    if (start) {
+      const set = buildRangeSet(start, end);
+      setSelectedDates(set);
+      // snap visible months to start
+      setLeftYear(start.getUTCFullYear());
+      setLeftMonth(start.getUTCMonth());
+      const rm = (start.getUTCMonth() + 1) % 12;
+      setRightMonth(rm);
+      setRightYear(rm === 0 ? start.getUTCFullYear() + 1 : start.getUTCFullYear());
+      setAnchorDate(null);
     }
   }, [activeRange]);
 
+  // 2-click selection logic
   function handleDateClick(dateStr) {
-    const newSelected = new Set(selectedDates);
-    if (selectedDates.has(dateStr)) {
-      newSelected.delete(dateStr);
-    } else {
-      newSelected.add(dateStr);
-      setActiveRange(null); // clear quick selection when user picks manually
+    setActiveRange(null); // manual selection clears presets
+    if (!anchorDate) {
+      setAnchorDate(dateStr);
+      setSelectedDates(new Set([dateStr]));
+      return;
     }
-    setSelectedDates(newSelected);
+    const [a, b] = [anchorDate, dateStr].sort();
+    const start = fromDateStrUTC(a);
+    const end = fromDateStrUTC(b);
+    const set = buildRangeSet(start, end);
+    setSelectedDates(set);
+    setAnchorDate(null);
   }
 
+  // Save/Cancel (no alerts)
+  function handleSave() {
+    if (typeof onChange === "function" && selectedDates.size) {
+      const sorted = [...selectedDates].sort();
+      const startDate = new Date(`${sorted[0]}T00:00:00Z`);
+      const endDate = new Date(`${sorted[sorted.length - 1]}T23:59:59Z`);
+      onChange({ startDate, endDate });
+    }
+    onClose?.();
+  }
+
+  function handleCancel() {
+    onClose?.();
+  }
+
+  // Month navigation (left controls both)
   function prevMonth() {
-    // decrement left month
     let newLeftMonth = leftMonth - 1;
     let newLeftYear = leftYear;
     if (newLeftMonth < 0) {
@@ -187,15 +232,13 @@ export default function PopupCalendar() {
     setLeftMonth(newLeftMonth);
     setLeftYear(newLeftYear);
 
-    // right month = left +1
-    let newRightMonth = (newLeftMonth + 1) % 12;
-    let newRightYear = newLeftMonth === 11 ? newLeftYear + 1 : newLeftYear;
+    const newRightMonth = (newLeftMonth + 1) % 12;
+    const newRightYear = newLeftMonth === 11 ? newLeftYear + 1 : newLeftYear;
     setRightMonth(newRightMonth);
     setRightYear(newRightYear);
   }
 
   function nextMonth() {
-    // increment left month
     let newLeftMonth = leftMonth + 1;
     let newLeftYear = leftYear;
     if (newLeftMonth > 11) {
@@ -205,27 +248,23 @@ export default function PopupCalendar() {
     setLeftMonth(newLeftMonth);
     setLeftYear(newLeftYear);
 
-    // right month = left +1
-    let newRightMonth = (newLeftMonth + 1) % 12;
-    let newRightYear = newLeftMonth === 11 ? newLeftYear + 1 : newLeftYear;
+    const newRightMonth = (newLeftMonth + 1) % 12;
+    const newRightYear = newLeftMonth === 11 ? newLeftYear + 1 : newLeftYear;
     setRightMonth(newRightMonth);
     setRightYear(newRightYear);
   }
 
-  function handleSave() {
-    // Implement save logic here — e.g., send selected dates to parent or backend
-    alert(`Saved dates:\n${[...selectedDates].join(", ")}`);
-  }
-
-  function handleCancel() {
-    // Implement cancel logic here — e.g., close modal or revert changes
-    alert("Cancelled");
-  }
-
   return (
-    <div className="popup-calendar-container">
+    <div
+      className="popup-calendar-container"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Select date range"
+      onClick={(e) => e.stopPropagation()} // let parent overlay handle outside click
+    >
+      {/* Sidebar presets */}
       <div className="sidebar">
-        {ranges.map((r) => (
+        {RANGES.map((r) => (
           <div
             key={r}
             className={`range-item${activeRange === r ? " active" : ""}`}
@@ -236,37 +275,39 @@ export default function PopupCalendar() {
         ))}
       </div>
 
+      {/* Calendars + actions */}
       <div className="calendars">
         <div className="nav-header">
-          <button onClick={prevMonth} className="nav-btn">{`<`}</button>
+          <button onClick={prevMonth} className="nav-btn">
+            {"<"}
+          </button>
           <div style={{ width: "100%" }} />
-          <button onClick={nextMonth} className="nav-btn">{`>`}</button>
+          <button onClick={nextMonth} className="nav-btn">
+            {">"}
+          </button>
         </div>
+
         <div className="calendars-row">
-          <Calendar
-            year={leftYear}
-            month={leftMonth}
-            selectedDates={selectedDates}
-            onDateClick={handleDateClick}
-          />
-          <Calendar
-            year={rightYear}
-            month={rightMonth}
-            selectedDates={selectedDates}
-            onDateClick={handleDateClick}
-          />
+          <Calendar year={leftYear} month={leftMonth} selectedDates={selectedDates} onDateClick={handleDateClick} />
+          <Calendar year={rightYear} month={rightMonth} selectedDates={selectedDates} onDateClick={handleDateClick} />
         </div>
 
         <div className="action-buttons">
           <button onClick={handleCancel} className="cancel-btn">
             Cancel
           </button>
-          <button onClick={handleSave} className="save-btn">
+          <button
+            onClick={handleSave}
+            className="save-btn"
+            disabled={!selectedDates.size}
+            style={{ opacity: selectedDates.size ? 1 : 0.6, cursor: selectedDates.size ? "pointer" : "not-allowed" }}
+          >
             Save
           </button>
         </div>
       </div>
 
+      {/* styles */}
       <style>{`
         .popup-calendar-container {
           display: flex;
@@ -287,6 +328,7 @@ export default function PopupCalendar() {
           padding: 8px 10px;
           cursor: pointer;
           color: #555;
+          border-radius: 4px;
         }
         .range-item:hover {
           background: #eee;
