@@ -121,7 +121,7 @@ const AthleteInfo = () => {
         <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg">
           <div className="tw-text-xl tw-font-bold">{athlete?.fullName}</div>
         </div>
-        <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
+        <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[500px]">
             <HeartGraph heartRateData={heartRateData} />
         </div>
         <div className="tw-grid tw-grid-cols-1 tw-gap-4">
@@ -130,8 +130,8 @@ const AthleteInfo = () => {
               <VO2MaxChart userId={athlete?.id} />
             </div>
           </div>
-          <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[400px]">
-            <SleepTimeline />
+          <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[620px] tw-overflow-hidden">
+            <SleepTimeline height={420} />
           </div>
         </div>
 
