@@ -1,70 +1,83 @@
+// server/server.js
 const cors = require("cors");
 const express = require("express");
 const admin = require("firebase-admin");
+
 const app = express();
 const port = 3000;
 
-// Firebase Admin account key
-//const serviceAccount = require("./firebas.json");
+// --- firebase admin init ---
 const serviceAccount = require("./firebase-service-account-prototype.json");
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+const db = admin.firestore();
 
 app.use(
   cors({
     origin: "http://localhost:5173",
   })
 );
-
 app.use(express.json());
 
-// Update user role
+// ------------------------------
+// helpers
+// ------------------------------
+function toDate(v) {
+  // accept Firestore Timestamp, { _seconds }, number ms, ISO string
+  if (!v && v !== 0) return null;
+  if (v instanceof admin.firestore.Timestamp) return v.toDate();
+  if (typeof v === "object" && v._seconds) return new Date(v._seconds * 1000);
+  if (typeof v === "number") return new Date(v);
+  if (typeof v === "string") {
+    const d = new Date(v);
+    return isNaN(d) ? null : d;
+  }
+  return null;
+}
+
+function clampAndSort(arr, startISO, endISO, pick) {
+  const start = startISO ? new Date(startISO) : null;
+  const end = endISO ? new Date(endISO) : null;
+
+  const okStart = start && !isNaN(start);
+  const okEnd = end && !isNaN(end);
+  const within = (d) => (!okStart || d >= start) && (!okEnd || d <= end);
+
+  return arr
+    .map(pick) // shape to { ts: Date, ... }
+    .filter(Boolean)
+    .filter((r) => r.ts && !isNaN(r.ts) && within(r.ts))
+    .sort((a, b) => a.ts - b.ts);
+}
+
+// ------------------------------
+// auth/roster endpoints (original)
+// ------------------------------
 app.post("/updateRole", async (req, res) => {
   const { email, newRole } = req.body;
   try {
     const userRecord = await admin.auth().getUserByEmail(email);
     const uid = userRecord.uid;
-    const db = admin.firestore();
-    const userRef = db.collection("Users").doc(uid);
-
-    await userRef.set({ role: newRole }, { merge: true });
-
+    await db.collection("Users").doc(uid).set({ role: newRole }, { merge: true });
     res.json({ success: true, message: `Role updated for ${email}` });
   } catch (error) {
     console.error("Error updating role:", error);
-    res
-      .status(500)
-      .json({ success: false, message: `Server error: ${error.message}` });
+    res.status(500).json({ success: false, message: `Server error: ${error.message}` });
   }
 });
 
-// Fetch authorized athletes for a coach
+// coach’s authorized athletes (original)
 app.get("/getUsers", async (req, res) => {
-  const coachId = req.query.coachId; // e.g., passed as ?coachId=123abc
-
-  if (!coachId) {
-    return res.status(400).json({ success: false, message: "Missing coachId" });
-  }
+  const coachId = req.query.coachId;
+  if (!coachId) return res.status(400).json({ success: false, message: "Missing coachId" });
 
   try {
-    const db = admin.firestore();
-    const coachRef = db.collection("Users").doc(coachId);
-    const coachDoc = await coachRef.get();
+    const coachDoc = await db.collection("Users").doc(coachId).get();
+    if (!coachDoc.exists) return res.status(404).json({ success: false, message: "Coach not found" });
 
-    if (!coachDoc.exists) {
-      return res.status(404).json({ success: false, message: "Coach not found" });
-    }
-
-    const coachData = coachDoc.data();
-    const authorizedAthletes = coachData.authorizedAthletes || [];
-
-    if (!authorizedAthletes.length) {
-      return res.json({ success: true, users: [] }); // No athletes authorized
-    }
+    const authorizedAthletes = coachDoc.data().authorizedAthletes || [];
+    if (!authorizedAthletes.length) return res.json({ success: true, users: [] });
 
     const users = [];
-
     for (const athleteRef of authorizedAthletes) {
       try {
         const athleteDoc = await athleteRef.get();
@@ -72,10 +85,7 @@ app.get("/getUsers", async (req, res) => {
 
         const athleteData = athleteDoc.data();
         const userRecord = await admin.auth().getUser(athleteDoc.id);
-
-        const [firstName, lastName] = userRecord.displayName
-          ? userRecord.displayName.split(" ")
-          : ["", ""];
+        const [firstName, lastName] = userRecord.displayName ? userRecord.displayName.split(" ") : ["", ""];
 
         users.push({
           id: athleteDoc.id,
@@ -83,298 +93,286 @@ app.get("/getUsers", async (req, res) => {
           lastName,
           email: userRecord.email,
           sports: athleteData.sports || "N/A",
-          role: athleteData.role || "athlete", // fallback
+          role: athleteData.role || "athlete",
         });
-      } catch (err) {
-        console.warn("Skipping athlete due to error:", err.message);
-        continue;
+      } catch (e) {
+        console.warn("Skipping athlete due to error:", e.message);
       }
     }
-
-    return res.json({ success: true, users });
+    res.json({ success: true, users });
   } catch (error) {
     console.error("Error fetching authorized athletes:", error);
-    return res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
-// Fetch all users
-// app.get("/getUsers", async (req, res) => {
-//   try {
-//     const db = admin.firestore();
-//     const usersRef = db.collection("Users");
-//     const snapshot = await usersRef.get();
 
-//     let users = [];
-//     for (const doc of snapshot.docs) {
-//       let userData = doc.data();
-//       if (userData.role) {
-//         userData.id = doc.id;
+// ------------------------------
+// NEW: calendar-driven data APIs (canonical)
+// ------------------------------
 
-//         try {
-//           const userRecord = await admin.auth().getUser(doc.id);
-//           const [firstName, lastName] = userRecord.displayName
-//             ? userRecord.displayName.split(" ")
-//             : ["", ""];
-//           userData.firstName = firstName || "";
-//           userData.lastName = lastName || "";
-//           userData.email = userRecord.email;
-//           userData.sports = userData.sports || "N/A";
-//         } catch (authError) {
-//           console.error(
-//             `Error fetching auth details for user ${doc.id}:`,
-//             authError
-//           );
-//           continue;
-//         }
-
-//         users.push(userData);
-//       }
-//     }
-
-//     res.json({ success: true, users });
-//   } catch (error) {
-//     console.error("Error fetching users:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: `Server error: ${error.message}` });
-//   }
-// });
-
-// Player's Heart Rate Graph
-app.get("/getHeartRate", async (req, res) => {
-  const { userId } = req.query; 
+// VO2 max (Hexoskin) — returns: [{ timestamp, vo2max }]
+app.get("/api/vo2max", async (req, res) => {
+  const { userId, start, end } = req.query;
+  if (!userId) return res.status(400).json({ message: "Missing userId" });
 
   try {
-    const db = admin.firestore();
+    const snap = await db.collection("Users").doc(userId).collection("VO2MaxDataHX").get();
+    if (snap.empty) return res.json([]);
 
-    // Fetch HeartRateDataHC subcollection info
-    const heartRateRef = db
-      .collection("Users")
-      .doc(userId)
-      .collection("HeartRateDataHC");
-
-    const snapshot = await heartRateRef.get();
-
-    // Check if any heart data exists 
-    if (snapshot.empty) {
-      return res
-        .status(404)
-        .json({ success: false, message: "No heart rate data found" });
-    }
-
-    // heart rate data 
-    let heartRateData = [];
-    snapshot.forEach((doc) => {
-      heartRateData.push(doc.data()); 
+    const rows = clampAndSort(snap.docs, start, end, (doc) => {
+      const d = doc.data();
+      const ts = toDate(d.timestamp);
+      const val = d.value ?? d.vo2max ?? d.y;
+      if (ts == null || val == null) return null;
+      return { ts, timestamp: ts.toISOString(), vo2max: Number(val) };
     });
 
-    // Send the data back as a JSON response
-    res.json({ success: true, heartRateData });
-  } catch (error) {
-    console.error("Error fetching heart rate data:", error);
-    res
-      .status(500)
-      .json({ success: false, message: `Server error: ${error.message}` });
+    res.json(rows.map(({ timestamp, vo2max }) => ({ timestamp, vo2max })));
+  } catch (e) {
+    console.error("VO2 error:", e);
+    res.status(500).json({ message: e.message });
   }
 });
+
+// Heart rate — returns: [{ timestamp, bpm }]
+app.get("/api/heart-rate", async (req, res) => {
+  const { userId, start, end } = req.query;
+  if (!userId) return res.status(400).json({ message: "Missing userId" });
+
+  try {
+    const snap = await db.collection("Users").doc(userId).collection("HeartRateDataHC").get();
+    if (snap.empty) return res.json([]);
+
+    const rows = clampAndSort(snap.docs, start, end, (doc) => {
+      const d = doc.data();
+      // possible shapes:
+      // { time, beatsPerMinute }  OR  { timestamp, bpm }  OR  { x, y }
+      const ts = toDate(d.time ?? d.timestamp ?? d.x);
+      const bpm = d.beatsPerMinute ?? d.bpm ?? d.y;
+      if (ts == null || bpm == null) return null;
+      return { ts, timestamp: ts.toISOString(), bpm: Number(bpm) };
+    });
+
+    res.json(rows.map(({ timestamp, bpm }) => ({ timestamp, bpm })));
+  } catch (e) {
+    console.error("Heart rate error:", e);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// Sleep — returns raw intervals: [{ start, end, stage }]
+app.get("/api/sleep", async (req, res) => {
+  const { userId, start, end } = req.query;
+  if (!userId) return res.status(400).json({ message: "Missing userId" });
+
+  try {
+    const snap = await db.collection("Users").doc(userId).collection("SleepDataHC").get();
+    if (snap.empty) return res.json([]);
+
+    const rows = clampAndSort(snap.docs, start, end, (doc) => {
+      const d = doc.data();
+      const s = toDate(d.startTime ?? d.start);
+      const e = toDate(d.endTime ?? d.end);
+      if (!s || !e) return null;
+
+      // if start/end given, keep if [s,e] intersects [start,end]
+      let keep = true;
+      if (start || end) {
+        const S = start ? new Date(start) : null;
+        const E = end ? new Date(end) : null;
+        if (S && E) keep = e >= S && s <= E;
+      }
+      if (!keep) return null;
+
+      const stage = d.stage ?? d.sleepStage ?? d.phase ?? null;
+      return {
+        ts: s, // for sorting
+        start: s.toISOString(),
+        end: e.toISOString(),
+        stage: stage == null ? null : Number(stage),
+      };
+    });
+
+    res.json(rows.map(({ start, end, stage }) => ({ start, end, stage })));
+  } catch (e) {
+    console.error("Sleep error:", e);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// ==============================
+// COMPAT ENDPOINT ALIASES (to match your frontend calls)
+// ==============================
+
+// alias: /api/getHeartRate  -> returns { heartRateData: [{ time, beatsPerMinute }] }
+app.get("/api/getHeartRate", async (req, res) => {
+  const { userId, start, end } = req.query;
+  if (!userId) return res.status(400).json({ message: "Missing userId" });
+
+  try {
+    const snap = await db.collection("Users").doc(userId).collection("HeartRateDataHC").get();
+    if (snap.empty) return res.json({ heartRateData: [] });
+
+    const rows = clampAndSort(snap.docs, start, end, (doc) => {
+      const d = doc.data();
+      const ts = toDate(d.time ?? d.timestamp ?? d.x);
+      const bpm = d.beatsPerMinute ?? d.bpm ?? d.y;
+      if (ts == null || bpm == null) return null;
+      return { ts, time: ts.toISOString(), beatsPerMinute: Number(bpm) };
+    });
+
+    res.json({ heartRateData: rows.map(({ time, beatsPerMinute }) => ({ time, beatsPerMinute })) });
+  } catch (e) {
+    console.error("Compat getHeartRate error:", e);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// alias: /api/getSleepData -> returns { sleepData: [{ startTime, endTime, stage }] }
+app.get("/api/getSleepData", async (req, res) => {
+  const { userId, start, end } = req.query;
+  if (!userId) return res.status(400).json({ message: "Missing userId" });
+
+  try {
+    const snap = await db.collection("Users").doc(userId).collection("SleepDataHC").get();
+    if (snap.empty) return res.json({ sleepData: [] });
+
+    const rows = clampAndSort(snap.docs, start, end, (doc) => {
+      const d = doc.data();
+      const s = toDate(d.startTime ?? d.start);
+      const e = toDate(d.endTime ?? d.end);
+      if (!s || !e) return null;
+
+      let keep = true;
+      if (start || end) {
+        const S = start ? new Date(start) : null;
+        const E = end ? new Date(end) : null;
+        if (S && E) keep = e >= S && s <= E;
+      }
+      if (!keep) return null;
+
+      const stage = d.stage ?? d.sleepStage ?? d.phase ?? null;
+      return {
+        ts: s,
+        startTime: s.toISOString(),
+        endTime: e.toISOString(),
+        stage: stage == null ? null : Number(stage),
+      };
+    });
+
+    res.json({ sleepData: rows.map(({ startTime, endTime, stage }) => ({ startTime, endTime, stage })) });
+  } catch (e) {
+    console.error("Compat getSleepData error:", e);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// alias: /getVO2MaxData -> returns { data: [{ x, y }] } (for VO2MaxChart)
 app.get("/getVO2MaxData", async (req, res) => {
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ success: false, message: "Missing userId" });
-  }
+  const { userId, start, end } = req.query;
+  if (!userId) return res.status(400).json({ message: "Missing userId" });
 
   try {
-    const db = admin.firestore();
-    const vo2Ref = db.collection("Users").doc(userId).collection("VO2MaxDataHX");
-    const snapshot = await vo2Ref.get();
+    const snap = await db.collection("Users").doc(userId).collection("VO2MaxDataHX").get();
+    if (snap.empty) return res.json({ data: [] });
 
-    if (snapshot.empty) {
-      return res.status(404).json({ success: false, message: "No VO₂ max data found" });
+    const rows = clampAndSort(snap.docs, start, end, (doc) => {
+      const d = doc.data();
+      const ts = toDate(d.timestamp);
+      const val = d.value ?? d.vo2max ?? d.y;
+      if (ts == null || val == null) return null;
+      return { ts, x: ts.toISOString(), y: Number(val) };
+    });
+
+    res.json({ data: rows.map(({ x, y }) => ({ x, y })) });
+  } catch (e) {
+    console.error("Compat getVO2MaxData error:", e);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// alias: /api/updateRole -> same as /updateRole
+app.post("/api/updateRole", async (req, res) => {
+  const { email, newRole } = req.body;
+  try {
+    const userRecord = await admin.auth().getUserByEmail(email);
+    const uid = userRecord.uid;
+    await db.collection("Users").doc(uid).set({ role: newRole }, { merge: true });
+    res.json({ success: true, message: `Role updated for ${email}` });
+  } catch (error) {
+    console.error("Error updating role:", error);
+    res.status(500).json({ success: false, message: `Server error: ${error.message}` });
+  }
+});
+
+// alias: /api/getUsers
+// - if coachId provided -> coach’s authorized athletes (same as /getUsers)
+// - if coachId missing  -> ALL users (used by Admin panel)
+app.get("/api/getUsers", async (req, res) => {
+  const coachId = req.query.coachId;
+
+  try {
+    if (!coachId) {
+      // admin roster: list all users in Users collection
+      const usersCol = await db.collection("Users").get();
+      const users = [];
+      for (const d of usersCol.docs) {
+        const udata = d.data();
+        try {
+          const userRecord = await admin.auth().getUser(d.id);
+          const [firstName, lastName] = userRecord.displayName ? userRecord.displayName.split(" ") : ["", ""];
+          users.push({
+            id: d.id,
+            firstName,
+            lastName,
+            email: userRecord.email,
+            role: udata.role || "athlete",
+            sports: udata.sports || "N/A",
+          });
+        } catch (e) {
+          console.warn("Skipping user due to auth fetch error:", e.message);
+        }
+      }
+      return res.json({ success: true, users });
     }
 
-    const vo2Data = [];
+    // same logic as original /getUsers
+    const coachDoc = await db.collection("Users").doc(coachId).get();
+    if (!coachDoc.exists) return res.status(404).json({ success: false, message: "Coach not found" });
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      let timestamp = null;
+    const authorizedAthletes = coachDoc.data().authorizedAthletes || [];
+    if (!authorizedAthletes.length) return res.json({ success: true, users: [] });
 
-      if (data.timestamp instanceof admin.firestore.Timestamp) {
-        timestamp = data.timestamp.toDate();
-      } else if (typeof data.timestamp === "number") {
-        timestamp = new Date(data.timestamp);
-      } else if (data.timestamp?._seconds) {
-        timestamp = new Date(data.timestamp._seconds * 1000);
-      } else if (typeof data.timestamp === "string") {
-        timestamp = new Date(data.timestamp);
-      }
+    const users = [];
+    for (const athleteRef of authorizedAthletes) {
+      try {
+        const athleteDoc = await athleteRef.get();
+        if (!athleteDoc.exists) continue;
 
-      if (data.value && timestamp && !isNaN(timestamp.getTime())) {
-        vo2Data.push({
-          x: timestamp,
-          y: data.value,
+        const athleteData = athleteDoc.data();
+        const userRecord = await admin.auth().getUser(athleteDoc.id);
+        const [firstName, lastName] = userRecord.displayName ? userRecord.displayName.split(" ") : ["", ""];
+
+        users.push({
+          id: athleteDoc.id,
+          firstName,
+          lastName,
+          email: userRecord.email,
+          sports: athleteData.sports || "N/A",
+          role: athleteData.role || "athlete",
         });
+      } catch (e) {
+        console.warn("Skipping athlete due to error:", e.message);
       }
-    });
-
-    vo2Data.sort((a, b) => a.x - b.x);
-
-    return res.json({ success: true, data: vo2Data });
+    }
+    res.json({ success: true, users });
   } catch (error) {
-    console.error("Error fetching VO₂ max data:", error);
-    return res.status(500).json({
-      success: false,
-      message: `Server error: ${error.message}`,
-    });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
-
-// Player's Sleep Rate Graph
-app.get("/getSleepData", async (req, res) => {
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ success: false, message: "Missing userId" });
-  }
-
-  try {
-    const db = admin.firestore();
-
-    const sleepDataRef = db
-      .collection("Users")
-      .doc(userId)
-      .collection("SleepDataHC");
-
-    const snapshot = await sleepDataRef.get();
-
-    if (snapshot.empty) {
-      return res.status(404).json({ success: false, message: "No sleep data found" });
-    }
-
-    // Gather all valid sleep entries
-    const allSleepData = snapshot.docs
-      .map(doc => doc.data())
-      .filter(entry => entry.startTime && entry.endTime);
-
-    if (allSleepData.length === 0) {
-      return res.status(404).json({ success: false, message: "No valid sleep entries" });
-    }
-
-    // Sort by latest endTime
-    allSleepData.sort((a, b) => new Date(b.endTime) - new Date(a.endTime));
-    const latestEnd = new Date(allSleepData[0].endTime);
-    const targetDate = latestEnd.toISOString().split("T")[0]; // YYYY-MM-DD
-
-    // Get all entries from that same night
-    const latestSleepData = allSleepData.filter(entry => {
-      const entryEndDate = new Date(entry.endTime).toISOString().split("T")[0];
-      return entryEndDate === targetDate;
-    });
-
-    if (latestSleepData.length === 0) {
-      return res.status(404).json({ success: false, message: "No recent sleep session found" });
-    }
-
-    return res.json({ success: true, sleepData: latestSleepData });
-  } catch (error) {
-    console.error("Error fetching sleep data:", error);
-    return res.status(500).json({ success: false, message: `Server error: ${error.message}` });
-  }
-});
-
-// app.get("/getSleepData", async (req, res) => {
-//   const { userId } = req.query; 
-//   //const targetDate = "2024-07-03";
-//   //const targetDate = req.query.date;
-
-//   try {
-//     const db = admin.firestore();
-
-//     //  SleepDataHC subcollection info
-//     const sleepDataRef = db
-//       .collection("Users")
-//       .doc(userId)
-//       .collection("SleepDataHC");
-
-//     const snapshot = await sleepDataRef.get();
-
-//     // Check if any sleep data exists 
-//     if (snapshot.empty) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "No sleep data found" });
-//     }
-
-//     // Sleep Data Collection
-//     let allSleepData = [];
-//     snapshot.forEach((doc) => {
-//       const data = doc.data();
-//       if (data.startTime && data.endTime) {
-//         allSleepData.push(data);
-//       }
-//     });
-
-//     // Sort by endTime descending to get the most recent session
-//     allSleepData.sort((a, b) => new Date(b.endTime) - new Date(a.endTime));
-
-//     if (allSleepData.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "No valid sleep data found",
-//       });
-//     }
-
-//     // Get the latest sleep session’s end date
-//     const latestEndDate = new Date(allSleepData[0].endTime).toISOString().split("T")[0];
-
-//     // Filter entries from the same night
-//     const latestSleepData = allSleepData.filter((entry) => {
-//       const entryDate = new Date(entry.endTime).toISOString().split("T")[0];
-//       return entryDate === latestEndDate;
-//     });
-
-//     if (latestSleepData.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "No recent sleep session found",
-//       });
-//     }
-
-//     // ✅ Send back the most recent full sleep session
-//     res.json({ success: true, sleepData: latestSleepData });
-
-//     // let sleepData = [];
-//     // snapshot.forEach((doc) => {
-//     //   const data = doc.data();
-//     //   const startDate = new Date(data.startTime).toISOString().split("T")[0];
-
-//     //   // Only include entries from the target date
-//     //   // if (startDate === targetDate) {
-//     //   //   sleepData.push(data);
-//     //   // }
-//     // });
-
-//     // If no sleep data found 
-//     if (sleepData.length === 0) {
-//       return res
-//         .status(404)
-//         .json({
-//           success: false,
-//           message: "No sleep data found for the target date",
-//         });
-//     }
-
-//     // Send the data back as a JSON response
-//     res.json({ success: true, sleepData });
-//   } catch (error) {
-//     console.error("Error fetching sleep data:", error);
-//     res
-//       .status(500)
-//       .json({ success: false, message: `Server error: ${error.message}` });
-//   }
-// });
-
+// ------------------------------
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });

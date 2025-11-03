@@ -26,7 +26,9 @@ const Admin = () => {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:3000/updateRole", {
+      //const response = await fetch("http://localhost:3000/updateRole", {
+      //const response = await fetch("/updateRole", {
+      const response = await fetch("/api/updateRole", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +53,10 @@ const Admin = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/getUsers");
+        //const response = await fetch("http://localhost:3000/getUsers");
+        //const response = await fetch("/getUsers");
+        const response = await fetch("/api/getUsers");
+
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }
