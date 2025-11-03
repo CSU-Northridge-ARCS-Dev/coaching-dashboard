@@ -17,10 +17,31 @@ const stageMap = {
   4: { label: "Awake", color: "#FF4D4F" },
 };
 
+// demo data — replace with your real feed if needed
+const rawData = [
+  { time: '2025-05-21T21:34:00.000Z', stage: 4 },
+  { time: '2025-05-21T22:00:00.000Z', stage: 2 },
+  { time: '2025-05-21T23:00:00.000Z', stage: 3 },
+  { time: '2025-05-22T00:30:00.000Z', stage: 2 },
+  { time: '2025-05-22T02:00:00.000Z', stage: 1 },
+  { time: '2025-05-22T03:30:00.000Z', stage: 2 },
+  { time: '2025-05-22T04:30:00.000Z', stage: 3 },
+  { time: '2025-05-22T05:00:00.000Z', stage: 4 },
+  { time: '2025-05-22T06:45:00.000Z', stage: 4 },
+];
+
+const data = rawData.map(e => ({
+  time: moment(e.time).valueOf(),
+  displayTime: moment(e.time).format('h:mm a'),
+  stage: e.stage,
+}));
+
+
+
 function formatRow(e) {
   return {
-    time: moment(e.time).valueOf(),
-    displayTime: moment(e.time).format("h:mm a"),
+    time: moment(e.time).valueOf(),                 // numeric x
+    displayTime: moment(e.time).format("h:mm a"),   // tooltip
     stage: e.stage,
   };
 }
@@ -37,23 +58,32 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
+
+
+
+
+
+
+
 /**
  * Props:
- *  - userId?: string
- *  - data?: [{time, stage}]   // optional; otherwise pass your real feed
- *  - height?: number (px)     // default 300
+ *  - data?: [{time, stage}]  // optional external feed; defaults to rawData above
+ *  - height?: number         // px; default 300
  */
-export default function SleepTimeline({ userId, data = [], height = 300 }) {
+export default function SleepTimeline({ data: external = rawData, height = 300 }) {
+  // overlay calendar state
   const [showCal, setShowCal] = useState(false);
-  const [range, setRange] = useState(null); // { startDate, endDate }
+  const [range, setRange] = useState(null); // { startDate: Date, endDate: Date }
 
-  const all = useMemo(() => data.map(formatRow).sort((a,b)=>a.time-b.time), [data]);
+  // normalize + (optionally) filter to range
+  const all = useMemo(() => external.map(formatRow).sort((a,b)=>a.time-b.time), [external]);
   const filtered = useMemo(() => {
     if (!range) return all;
     const s = range.startDate.getTime(), e = range.endDate.getTime();
     return all.filter(p => p.time >= s && p.time <= e);
   }, [all, range]);
 
+  // simple stage duration summary (unchanged)
   const stageDurations = useMemo(() => {
     const acc = {};
     const src = filtered.length ? filtered : all;
@@ -69,61 +99,85 @@ export default function SleepTimeline({ userId, data = [], height = 300 }) {
   }
 
   return (
-    <div className="tw-text-white tw-space-y-2">
-      {/* header */}
-      <div className="tw-flex tw-items-center tw-justify-between">
-        <h2 className="tw-m-0">Sleep Stages</h2>
-        <div className="tw-flex tw-items-center tw-gap-2">
+    <div
+      style={{
+        background: "#0f0f0f",
+        padding: 20,
+        borderRadius: 10,
+        color: "white",
+        position: "relative",       // allows the overlay to anchor here
+      }}
+    >
+      {/* header + Range button (VO2-style) */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <h2 style={{ margin: 0 }}>Sleep Stages</h2>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {range && (
-            <span className="tw-text-xs tw-opacity-80">
+            <span style={{ opacity: 0.8, fontSize: 12 }}>
               {moment(range.startDate).format("YYYY-MM-DD")} → {moment(range.endDate).format("YYYY-MM-DD")}
-              <button onClick={() => setRange(null)} className="tw-ml-2 tw-underline">clear</button>
+              <button
+                onClick={() => setRange(null)}
+                style={{ marginLeft: 8, textDecoration: "underline", background: "transparent", color: "#fff" }}
+              >
+                clear
+              </button>
             </span>
           )}
           <button
             onClick={() => setShowCal(true)}
-            className="tw-border tw-border-gray-500 tw-rounded-full tw-px-3 tw-py-1"
+            style={{ border: "1px solid #555", background: "transparent", color: "#fff", borderRadius: 18, padding: "6px 10px" }}
           >
             🗓️ Range
           </button>
         </div>
       </div>
 
-      {/* quick summary */}
-      <div className="tw-flex tw-gap-3 tw-flex-wrap">
+      {/* summary blocks (keep light) */}
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 8 }}>
         {[1,2,3,4].map(k => (
-          <div key={k} className="tw-bg-gray-900/60 tw-border tw-border-gray-800 tw-rounded tw-px-2 tw-py-1">
-            <div className="tw-text-xs tw-opacity-80">{stageMap[k].label}</div>
-            <div className="tw-font-bold">{Math.round(stageDurations[k] || 0)} min</div>
+          <div key={k} style={{ background: "#141414", border: "1px solid #222", borderRadius: 8, padding: "6px 10px" }}>
+            <div style={{ fontSize: 12, opacity: 0.8 }}>{stageMap[k].label}</div>
+            <div style={{ fontWeight: 700 }}>{Math.round(stageDurations[k] || 0)} min</div>
           </div>
         ))}
       </div>
 
-      {/* chart (fills fixed height) */}
-      <div style={{ height }}>
+      {/* fixed-height chart container so it doesn't grow huge */}
+      <div style={{ height, width: "100%" }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={filtered} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
+          <LineChart
+            data={data}
+            // data={filtered}
+            margin={{ top: 10, right: 30, left: 10, bottom: 40 }}
+          >
+            <defs>
+              <linearGradient id="sleepGradient" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%"   stopColor={stageMap[1].color} />
+                <stop offset="33%"  stopColor={stageMap[2].color} />
+                <stop offset="66%"  stopColor={stageMap[3].color} />
+                <stop offset="100%" stopColor={stageMap[4].color} />
+              </linearGradient>
+            </defs>
+
             <XAxis
               dataKey="time"
               type="number"
               domain={["dataMin", "dataMax"]}
               tickFormatter={(t) => moment(t).format("h:mm a")}
-              tick={{ fill: "#ffffff" }}
-              stroke="#FFFFFF1A"
+              tick={{ fill: "white" }}
             />
             <YAxis
               type="number"
               domain={[1, 4]}
               ticks={[1, 2, 3, 4]}
               tickFormatter={(v) => stageMap[v]?.label ?? v}
-              tick={{ fill: "#ffffff" }}
-              stroke="#FFFFFF1A"
+              tick={{ fill: "white" }}
             />
             <Tooltip content={<CustomTooltip />} />
             <Line
               type="monotone"
               dataKey="stage"
-              stroke="#8ecae6"
+              stroke="url(#sleepGradient)"
               strokeWidth={4}
               strokeLinecap="round"
               dot={false}
@@ -133,12 +187,20 @@ export default function SleepTimeline({ userId, data = [], height = 300 }) {
         </ResponsiveContainer>
       </div>
 
+      {/* simple overlay calendar (same UX as VO₂/Heart) */}
       {showCal && (
         <div
           onClick={() => setShowCal(false)}
-          className="tw-fixed tw-inset-0 tw-bg-black/40 tw-grid tw-place-items-center tw-z-50"
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0,0,0,0.35)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+          }}
         >
-          <div onClick={(e) => e.stopPropagation()} className="tw-shadow-2xl">
+          <div onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,.4)" }}>
             <PopupCalendar onChange={handleCalendarChange} onClose={() => setShowCal(false)} />
           </div>
         </div>
