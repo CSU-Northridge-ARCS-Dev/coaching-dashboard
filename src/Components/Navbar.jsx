@@ -142,6 +142,19 @@ const Navbar = () => {
               </li>
               <li>
                 <Link
+                  to="/team-insights"
+                  className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
+                    location.pathname === "/team-insights" ? "tw-text-red-500" : ""
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faHeartbeat} />
+                  <span className={`${location.pathname === "/team-insights" ? "tw-text-red-500" : ""}`}>
+                    Team Insights
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/invitation"
                   className={`tw-flex tw-items-center tw-space-x-2 tw-text-white tw-px-4 tw-py-2 hover:tw-bg-[#3D4F6D] ${
                     location.pathname === "/invitation" ? "tw-text-red-500" : ""

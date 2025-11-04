@@ -12,6 +12,7 @@ import AthleteDashboard from "./Pages/AthleteDashboard";
 import CoachDashboard from "./Pages/CoachDashboard";
 import AthleteInfo from "./Pages/AthleteInfo";
 import Invitation from "./Pages/Invitation";
+import TeamInsights from "./Pages/TeamInsights";
 import "./style.css";
 
 
@@ -58,6 +59,14 @@ const App = () => {
             element={
               <ProtectedRoute requiredRole="coach">
                 <Invitation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/team-insights"
+            element={
+              <ProtectedRoute requiredRole="coach">
+                <TeamInsights />
               </ProtectedRoute>
             }
           />

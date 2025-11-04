@@ -372,6 +372,87 @@ app.get("/api/getUsers", async (req, res) => {
   }
 });
 
+
+
+// ==============================
+// TEAM ENDPOINTS
+// ==============================
+
+// helper: fetch one athlete's heart-rate rows in canonical shape
+async function fetchAthleteHeartRows(db, userId, start, end) {
+  const snap = await db.collection("Users").doc(userId).collection("HeartRateDataHC").get();
+  if (snap.empty) return [];
+  const rows = clampAndSort(snap.docs, start, end, (doc) => {
+    const d = doc.data();
+    const ts = toDate(d.time ?? d.timestamp ?? d.x);
+    const bpm = d.beatsPerMinute ?? d.bpm ?? d.y;
+    if (!ts || bpm == null) return null;
+    return { ts, timestamp: ts.toISOString(), bpm: Number(bpm) };
+  });
+  return rows.map(({ timestamp, bpm }) => ({ timestamp, bpm }));
+}
+
+// GET /api/team/heart-rate?athleteIds=a,b,c&start=ISO&end=ISO&mode=overlay|grid|avg&label=displayName
+// - overlay/grid: returns { series: [{ userId, label, data: [{timestamp,bpm}] }] }
+// - avg:          returns { average: [{timestamp,bpm}] }  // naive 60s bin average across athletes present
+app.get("/api/team/heart-rate", async (req, res) => {
+  try {
+    const { athleteIds = "", start, end, mode = "overlay" } = req.query;
+    const ids = athleteIds.split(",").map(s => s.trim()).filter(Boolean);
+    if (!ids.length) return res.status(400).json({ message: "Missing athleteIds" });
+
+    // fetch display names (labels) from Firebase Auth (best-effort)
+    const labels = {};
+    await Promise.all(ids.map(async (id) => {
+      try {
+        const u = await admin.auth().getUser(id);
+        labels[id] = u.displayName || u.email || id;
+      } catch { labels[id] = id; }
+    }));
+
+    // fetch all series
+    const perUser = await Promise.all(
+      ids.map(async (id) => {
+        const data = await fetchAthleteHeartRows(db, id, start, end);
+        return { userId: id, label: labels[id], data };
+      })
+    );
+
+    if (mode === "avg") {
+      // very simple 60s bin averaging across all athletes
+      const bin = (iso) => Math.floor(new Date(iso).getTime() / 60000) * 60000; // minute
+      const buckets = new Map(); // key: ms, val: {sum, n}
+      perUser.forEach(({ data }) => {
+        data.forEach(({ timestamp, bpm }) => {
+          const k = bin(timestamp);
+          const v = buckets.get(k) || { sum: 0, n: 0 };
+          v.sum += bpm; v.n += 1;
+          buckets.set(k, v);
+        });
+      });
+      const average = [...buckets.entries()]
+        .sort((a,b)=>a[0]-b[0])
+        .map(([ms, {sum, n}]) => ({ timestamp: new Date(ms).toISOString(), bpm: +(sum / n).toFixed(1) }));
+      return res.json({ average });
+    }
+
+    // overlay or grid both return the same payload; the UI decides how to render
+    return res.json({ series: perUser });
+  } catch (e) {
+    console.error("team/heart-rate error:", e);
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// (pattern you can copy later)
+// GET /api/team/vo2max?athleteIds=...&start=...&end=... -> { series: [{userId,label,data:[{timestamp,vo2max}]}] }
+// GET /api/team/sleep?athleteIds=...&start=...&end=... -> { series: [{userId,label,data:[{start,end,stage}]}] }
+
+
+
+
+
+
 // ------------------------------
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
