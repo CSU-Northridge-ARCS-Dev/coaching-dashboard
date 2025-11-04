@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
-  CategoryScale,
   TimeScale,
   LinearScale,
   PointElement,
@@ -10,14 +9,14 @@ import {
   Title,
   Tooltip,
   Legend,
-  Decimation
+  Decimation,
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import HighlightZones from "chartjs-plugin-annotation";
 import ZoomAndPan from "chartjs-plugin-zoom";
+import PopupCalendar from "./DatePicker/PopupCalendar";
 
 ChartJS.register(
-  //CategoryScale,
   TimeScale,
   LinearScale,
   PointElement,
@@ -30,346 +29,179 @@ ChartJS.register(
   Decimation
 );
 
-
-const HeartGraph = ({ heartRateData }) => {
-  //const chartReset = useRef(null); //used for resetting chart after zoom/drag
-  const chartReset = useRef(null);
+/**
+ * Props:
+ *  - userId?: string
+ *  - heartRateData?: [{ time, beatsPerMinute }]
+ *  - onRangeChange?: ({startDate, endDate}) => void
+ *  - height?: number (px)  default 300
+ */
+export default function HeartRateChart({
+  userId,
+  heartRateData = [],
+  onRangeChange,
+  height = 300,
+}) {
+  const chartRef = useRef(null);
   const [smooth, setSmooth] = useState(false);
-  // Convert each data point to label (like "03:12") and BPM
-  // const labels = heartRateData.map((entry) => {
-  //   const date = new Date(entry.time);
-  //   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  // });
+  const [showCal, setShowCal] = useState(false);
+  const [dateRange, setDateRange] = useState(null); // { startDate, endDate }
 
-  // const bpmValues = heartRateData.map((entry) => entry.beatsPerMinute);
+  // normalize + sort
+  const base = useMemo(() => {
+    return heartRateData
+      .map((e) => {
+        const t = new Date(e.time);
+        const ok = !isNaN(t.getTime()) && t.getFullYear() >= 2020 && t.getFullYear() <= 2035;
+        return ok ? { x: t.getTime(), y: e.beatsPerMinute } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.x - b.x);
+  }, [heartRateData]);
 
-  // const validData = heartRateData
-  //   .filter((entry) => {
-  //     const time = new Date(entry.time).getTime();
-  //     return !isNaN(time) && time < Date.now() + 1000 * 60 * 60; // max 1 hour into future
-  //   })
-  //   .map((entry) => ({
-  //     x: new Date(entry.time),
-  //     y: entry.beatsPerMinute,
-  //   }));
+  // optional local range filter
+  const points = useMemo(() => {
+    if (!dateRange) return base;
+    const s = dateRange.startDate.getTime();
+    const e = dateRange.endDate.getTime();
+    return base.filter((p) => p.x >= s && p.x <= e);
+  }, [base, dateRange]);
 
-  const validData = heartRateData
-    .map(entry => {
-      const time = new Date(entry.time);
-      const isValid =
-        !isNaN(time.getTime()) &&
-        time.getFullYear() >= 2020 &&
-        time.getFullYear() <= 2030; // avoid 1970 or junk
+  // y-axis bounds + zones
+  const maxHR = points.reduce((m, p) => Math.max(m, p.y), 0);
+  const yMaxAxis = Math.max(60, Math.ceil(maxHR / 10) * 10 || 100);
 
-      //return isValid ? { x: time, y: entry.beatsPerMinute } : null;
-      return isValid ? { x: time.getTime(), y: entry.beatsPerMinute } : null; // <-- numeric x
-    })
-    .filter(Boolean) // remove nulls
-    .sort((a, b) => a.x - b.x); // sort by time
-
-    if (validData.length > 0 && validData[0].x instanceof Date && !isNaN(validData[0].x)) {
-      console.log("Start:", validData[0].x.toISOString());
-      console.log("End:", validData[validData.length - 1].x.toISOString());
-    } else {
-      console.warn("⚠️ No valid heart rate data points to plot.");
-    }
-    
-  let maxHR = 0;
-  for(let i = 0; i<validData.length; i++){ //finds max hr by traversing dataset
-    if(maxHR < validData[i].y){
-      maxHR = validData[i].y;
-    }
-  }
-
-  // decide how aggressive to decimate
- const dense = validData.length > 400; // only bother if there's enough data
- const samples = Math.max(
-   120,                                      // floor
-   Math.min(600, Math.floor(validData.length * 0.35)) // keep ~35%, cap 600
- );
-//  const dense = validData.length > 20; // only bother if there's enough data
-//  const samples = Math.max(
-//    20,                                      // floor
-//    Math.min(30, Math.floor(validData.length * 0.35)) // keep ~35%, cap 600
-//  );
+  const dense = points.length > 400;
+  const samples = Math.max(120, Math.min(600, Math.floor(points.length * 0.35)));
 
   const data = {
-    //labels,
     datasets: [
       {
         label: "Heart Rate",
-        //data: bpmValues,
-        // data: heartRateData.map((entry) => ({
-        //   x: new Date(entry.time),
-        //   y: entry.beatsPerMinute,
-        // })),
-        data: validData,
-        parsing: false,        // <-- let decimator work directly on data
-        normalized: true,      // <-- perf hint for sorted x
+        data: points,
+        parsing: false,
+        normalized: true,
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
-        // pointStyle: "circle",
-        // pointRadius: 5,
-        // pointHoverRadius: 10,
-
-        // pointStyle: "circle",
-        // pointRadius: smooth ? 0 : 3,     // ✨ hide points when smoothed
-        // pointHoverRadius: smooth ? 0 : 8,
-        // tension: smooth ? 0.4 : 0.0,
-
         pointStyle: "circle",
-        pointRadius: smooth ? 0 : 3,   // hide dots when smoothed
-        pointHoverRadius: smooth ? 0 : 8,
-        tension: smooth ? 0.35 : 0.0,  // small curve so it “reads” as smooth
-      },
-      {
-        label: "Peak Zone",
-        data: [], //empty, just for legend display
-        borderColor: "rgba(250, 101, 133, 0.7)",
-        backgroundColor: "rgba(250, 101, 133, 0.7)",
-      },
-      {
-        label: "Cardio Zone",
-        data: [], //empty, just for legend display
-        borderColor: "rgba(253, 217, 110, 0.7)",
-        backgroundColor: "rgba(253, 217, 110, 0.7)",
+        pointRadius: smooth ? 0 : 3,
+        pointHoverRadius: smooth ? 0 : 6,
+        tension: smooth ? 0.35 : 0.0,
       },
     ],
   };
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false, // fill the given height
     plugins: {
-      title: {
-        display: true,
-        text: "Heart Rate Readings Over Time",
-      },
-      decimation: {
-        enabled: smooth && dense,  // only when toggle is ON and worth it
-        algorithm: "lttb",
-        samples,                   // dynamic target
-      },
-      annotation:{
-      annotations:{
-        peakZone:{
-            type:"box",
-            yMin: maxHR * 0.85,
-            yMax: maxHR,
-            backgroundColor: "rgba(250, 101, 133, 0.7)",
+      title: { display: true, text: "Heart Rate Over Time", color: "#fff" },
+      decimation: { enabled: smooth && dense, algorithm: "lttb", samples },
+      annotation: {
+        annotations: {
+          peakZone: {
+            type: "box",
+            yMin: yMaxAxis * 0.85,
+            yMax: yMaxAxis,
+            backgroundColor: "rgba(250,101,133,.18)",
             borderWidth: 0,
             drawTime: "beforeDatasetsDraw",
           },
-          cardioZone:{
-            type:"box",
-            yMin: maxHR *0.7,
-            yMax: maxHR * 0.85,
-            backgroundColor: "rgba(253, 217, 110, 0.7)",
+          cardioZone: {
+            type: "box",
+            yMin: yMaxAxis * 0.7,
+            yMax: yMaxAxis * 0.85,
+            backgroundColor: "rgba(253,217,110,.18)",
             borderWidth: 0,
             drawTime: "beforeDatasetsDraw",
           },
-
-      },
-      
-    },
-    tooltip:{
-      callbacks:{
-        title: ()=>null,
-        // label: function dataDisplay(data){
-        //   return `${data.parsed.y} BPM · ${data.label}`;
-        // },
-        label: (ctx) => {
-        const t = new Date(ctx.parsed.x);
-        const hhmm = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        return `${ctx.parsed.y} BPM · ${hhmm}`;
-      },
-     },
-    },
-    // decimation: {
-    //     enabled: smooth,           // only when toggle is ON
-    //     algorithm: "lttb",
-    //     samples: 1000,             // ~how many points to keep (tune 600–1500)
-    //   },
-    zoom:{
-        pan:{
-          enabled: true,
-          mode: "x",
-          modifierKey: "ctrl",
         },
-        zoom:{
-         drag:{
-            enabled:true,
-            modifierKey: "shift",
-         },
-         mode:"x"
       },
+      tooltip: {
+        callbacks: {
+          title: () => null,
+          label: (ctx) => {
+            const t = new Date(ctx.parsed.x);
+            const hhmm = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            return `${ctx.parsed.y} BPM · ${hhmm}`;
+          },
+        },
       },
-     
-
+      zoom: {
+        pan: { enabled: true, mode: "x", modifierKey: "ctrl" },
+        zoom: { drag: { enabled: true, modifierKey: "shift" }, mode: "x" },
+      },
+      legend: { labels: { color: "#fff" } },
     },
-    
     scales: {
       x: {
-        type: "time", 
-        // time: {
-        //   unit: "hour",
-        //   tooltipFormat: "HH:mm",
-        //   displayFormats: {
-        //     hour: "HH:mm",
-        //   },
-        // },
-        time: {
-          tooltipFormat: "HH:mm",
-          displayFormats: {
-            hour: "HH:mm",
-            minute: "HH:mm",
-          },
-        },        
-        title: {
-          display: true,
-          text: "Time",
-          color: "#ffffff",
-        },
-        grid: { color: "#ffffff" },
+        type: "time",
+        time: { tooltipFormat: "HH:mm", displayFormats: { hour: "HH:mm", minute: "HH:mm" } },
+        grid: { color: "rgba(255,255,255,0.1)" },
         ticks: { color: "#ffffff", maxRotation: 90, minRotation: 45 },
+        title: { display: true, text: "Time", color: "#fff" },
       },
-      // y: {
-      //   title: {
-      //     display: true,
-      //     text: "Heart Rate (BPM)",
-      //     color: "#ffffff",
-      //   },
-      //   min: 0,
-      //   max: maxHR,
-      //   grid: { color: "#ffffff" },
-      //   ticks: { color: "#ffffff" },
-      // },
-      y: { 
-        title: { 
-          display: true, 
-          text: "Heart Rate (BPM)", 
-          color: "#fff" },
-          min: 0, 
-          max: maxHR, 
-          grid: { color: "#fff" }, 
-          ticks: { color: "#fff" } },
+      y: {
+        min: 0,
+        max: yMaxAxis,
+        grid: { color: "rgba(255,255,255,0.1)" },
+        ticks: { color: "#ffffff" },
+        title: { display: true, text: "BPM", color: "#fff" },
+      },
     },
   };
-   const resetZoom =()=>{
-    chartReset.current?.resetZoom();
-  }
-  useEffect(()=>{
-    const handleKey = (e) =>{
-      if(e.key==="Escape"){
-        resetZoom();
-     }
-    };
-    window.addEventListener("keydown", handleKey);
-    return()=> window.removeEventListener("keydown", handleKey);
+
+  const resetZoom = () => chartRef.current?.resetZoom();
+  useEffect(() => {
+    const onEsc = (e) => e.key === "Escape" && resetZoom();
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
   }, []);
- 
+
+  const handleCalendarChange = ({ startDate, endDate }) => {
+    setDateRange({ startDate, endDate });
+    onRangeChange?.({ startDate, endDate });
+  };
+
   return (
-  <>
-  {/* <div style={{textAlign:"right", marginBottom:"-20px"}}>
-    <button onClick={resetZoom} style={{backgroundColor: "rgba(75, 75, 75, 0.5)", padding: "5px", cursor: "pointer",}}> Reset Zoom </button>
-  </div> */}
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"-20px" }}>
-        <span style={{ opacity: 0.8, fontSize: 12 }}>Zones: estimated</span>
-        <div style={{ display:"flex", gap:8 }}>
-          <button onClick={() => setSmooth(s => !s)}
-                  style={{backgroundColor:"rgba(75,75,75,0.5)", padding:"5px 8px", cursor:"pointer"}}>
+    <div className="tw-space-y-2 tw-text-white">
+      {/* header controls */}
+      <div className="tw-flex tw-items-center tw-justify-between">
+        <span className="tw-text-xs tw-opacity-80">Zones: estimated</span>
+        <div className="tw-flex tw-gap-2">
+          <button onClick={() => setSmooth((s) => !s)} className="tw-bg-gray-700 tw-px-3 tw-py-1 tw-rounded">
             {smooth ? "Smooth: ON" : "Smooth: OFF"}
           </button>
-          <button onClick={resetZoom}
-                  style={{backgroundColor:"rgba(75,75,75,0.5)", padding:"5px 8px", cursor:"pointer"}}>
+          <button onClick={resetZoom} className="tw-bg-gray-700 tw-px-3 tw-py-1 tw-rounded">
             Reset Zoom
+          </button>
+          <button onClick={() => setShowCal(true)} className="tw-border tw-border-gray-500 tw-rounded-full tw-px-3 tw-py-1">
+            🗓️ Range
           </button>
         </div>
       </div>
-    {/* <Line ref={chartReset} data={data} options={options} /> */}
-    <Line key={smooth ? "smooth" : "raw"} ref={chartReset} data={data} options={options} />
-  </>
-);
 
-};
+      {dateRange && (
+        <div className="tw-text-xs tw-opacity-80">
+          Range: {dateRange.startDate.toISOString().slice(0, 10)} → {dateRange.endDate.toISOString().slice(0, 10)}
+        </div>
+      )}
 
+      {/* fixed inner height so it fits your card */}
+      <div style={{ height }}>
+        <Line ref={chartRef} data={data} options={options} />
+      </div>
 
-
-
-// const HeartGraph = ({ heartRateData }) => {
-//   // Prepare labels (hours) for 24 hours of the day
-//   const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`);
-
-//   // Initialize an array to store the max heart rate for each hour
-//   const maxHeartRatePerHour = Array(24).fill(0); // Default value is 0 for missing hours
-
-//   // Filter data for the specific date "2024-07-03"
-//   const filteredData = heartRateData.filter((entry) =>
-//     entry.time.startsWith("2024-07-03")
-//   );
-
-//   // Map over filtered data to update max heart rate per hour
-//   filteredData.forEach((entry) => {
-//     const date = new Date(entry.time);
-//     const hour = date.getUTCHours(); // Get the hour in UTC (or use `getHours()` for local time)
-//     maxHeartRatePerHour[hour] = entry.beatsPerMinute; // Set the heart rate for the corresponding hour
-//   });
-
-//   const data = {
-//     labels: hours, // X-axis: Time in hours
-//     datasets: [
-//       {
-//         label: "Max Heart Rate",
-//         data: maxHeartRatePerHour, // Y-axis: BPM data
-//         borderColor: "rgba(255, 99, 132, 1)",
-//         backgroundColor: "rgba(255, 99, 132, 0.2)",
-//         pointStyle: "circle",
-//         pointRadius: 5,
-//         pointHoverRadius: 10,
-//       },
-//     ],
-//   };
-
-//   const options = {
-//     responsive: true,
-//     plugins: {
-//       title: {
-//         display: true,
-//         text: "Max Heart Rate Per Hour for 2024-07-03",
-//       },
-//     },
-//     scales: {
-//       x: {
-//         title: {
-//           display: true,
-//           text: "Time of Day",
-//           color: "#ffffff",
-//         },
-//         grid: {
-//           color: "#ffffff",
-//         },
-//         ticks: {
-//           color: "#ffffff",
-//         },
-//       },
-//       y: {
-//         title: {
-//           display: true,
-//           text: "Heart Rate (BPM)",
-//           color: "#ffffff",
-//         },
-//         min: 0,
-//         max: 150, // Adjust max value as needed based on actual data range
-//         grid: {
-//           color: "#ffffff",
-//         },
-//         ticks: {
-//           color: "#ffffff",
-//         },
-//       },
-//     },
-//   };
-
-//   return <Line data={data} options={options} />;
-// };
-
-export default HeartGraph;
+      {showCal && (
+        <div
+          onClick={() => setShowCal(false)}
+          className="tw-fixed tw-inset-0 tw-bg-black/40 tw-grid tw-place-items-center tw-z-50"
+        >
+          <div onClick={(e) => e.stopPropagation()} className="tw-shadow-2xl">
+            <PopupCalendar onChange={handleCalendarChange} onClose={() => setShowCal(false)} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

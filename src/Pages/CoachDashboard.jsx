@@ -32,7 +32,9 @@ const CoachDashboard = () => {
       }
       try {
         //const response = await fetch("http://localhost:3000/getUsers");
-        const response = await fetch(`http://localhost:3000/getUsers?coachId=${user.uid}`);
+        //const response = await fetch(`http://localhost:3000/getUsers?coachId=${user.uid}`);
+        //const response = await fetch(`/getUsers?coachId=${user.uid}`);
+        const response = await fetch(`/api/getUsers?coachId=${user.uid}`);
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }
