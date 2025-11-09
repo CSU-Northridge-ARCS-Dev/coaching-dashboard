@@ -129,7 +129,9 @@ const AthleteInfo = () => {
             onRangeChange={onSleepRangeChange}
           />
         </div>
-
+        <div className="tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[450px]">
+            <RespiratoryGraph />
+        </div>
         <div className="tw-flex tw-justify-center tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-h-[500px]">
           <ActivityRing />
         </div>
@@ -139,3 +141,4 @@ const AthleteInfo = () => {
 };
 
 export default AthleteInfo;
+
